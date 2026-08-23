@@ -10,9 +10,8 @@ public class ServicioEncomiendas extends Pedido implements Repartible, Mostrable
     private Repartidor repartidor;
 
 
-
-    public ServicioEncomiendas(int idPedido, String nombreCliente, String direccionDeEntrega, String tipoDelPedido, double pesoEncomienda, String tipoDeEmbalaje, Repartidor repartidor) {
-        super(idPedido, nombreCliente, direccionDeEntrega, tipoDelPedido);
+    public ServicioEncomiendas(int idPedido, String nombreCliente, String direccionDeEntrega, double distanciaKm, String tipoDelPedido, double tiempoEstimadoDeEntrega, boolean tipoDeEntrega, double pesoEncomienda, String tipoDeEmbalaje, Repartidor repartidor) {
+        super(idPedido, nombreCliente, direccionDeEntrega, distanciaKm, tipoDelPedido, tiempoEstimadoDeEntrega, tipoDeEntrega);
         this.pesoEncomienda = pesoEncomienda;
         this.tipoDeEmbalaje = tipoDeEmbalaje;
         this.repartidor = repartidor;
@@ -33,13 +32,26 @@ public class ServicioEncomiendas extends Pedido implements Repartible, Mostrable
     @Override
     public void mostrarInformacion() {
 
-        System.out.println(" \n Id pedido: " + getIdPedido() +  " \n Peso: " + pesoEncomienda + " kg " +  " \n Embalaje: " + tipoDeEmbalaje);
-        repartidor.mostrarInformacion();
+        System.out.println(" \n Id pedido: " + getIdPedido() + " \n Nombre del cliente: " + getNombreCliente() +  " \n Peso: " + pesoEncomienda + " kg " +  " \n Embalaje: " + tipoDeEmbalaje + " \n Dirección destinada: " +  direccionDeEntrega);
+
 
     }
+
+    @Override
+    public double calcularTiempoEntrega() {
+        double tiempoBase = 10.0;
+        if(this.distanciaKm > 5.0) {
+           tiempoBase += 5.0;
+        }
+        return tiempoBase;
+    }
+
     @Override
     public void asignarRepartidor() {
-        System.out.println(" \n Encomienda asignada para: " + repartidor.getNombreRepartidor() + " \n Tipo de vehiculo: " + repartidor.tipoVehiculoRepartidor  );
+        String disponibilidad = repartidor.isDisponibilidadInmediata() ? "Disponible ahora" : "No disponible";
+        System.out.println(" \n Repartidor asignado: " + repartidor.getNombreRepartidor() + " \n Tipo de vehiculo: " + repartidor.tipoVehiculoRepartidor + " \n Disponibilidad: " + disponibilidad);
+        System.out.println();
+        System.out.println(" Tiempo estimado del viaje: " + calcularTiempoEntrega() + " minutos.");
         System.out.println(":::::::::::::::::::::::::::::::::::::\n");
     }
 

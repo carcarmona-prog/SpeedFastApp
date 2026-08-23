@@ -38,10 +38,10 @@ public class Repartidor implements Mostrable {
         String mochila = mochilaTermica ? "Sí tiene" : "No tiene";
         String disponibilidad = disponibilidadInmediata ? "Disponible ahora" : "No disponible";
 
-        System.out.println("Nombre Repartidor: " + nombreRepartidor
-                + " Tipo de vehículo: " + tipoVehiculoRepartidor
-                + " Mochila térmica: " + mochila
-                + " Disponibilidad: " + disponibilidad);
+        System.out.println(" Nombre Repartidor: " + nombreRepartidor
+                + " \n Tipo de vehículo: " + tipoVehiculoRepartidor
+                + " \n Mochila térmica: " + mochila
+                + " \n Disponibilidad: " + disponibilidad);
     }
 
 

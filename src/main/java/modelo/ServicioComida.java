@@ -9,8 +9,8 @@ public class ServicioComida extends Pedido implements Mostrable, Repartible {
     private boolean mochilaTermica;
     private Repartidor repartidor;
 
-    public ServicioComida(int idPedido, String nombreCliente, String direccionDeEntrega, String tipoDelPedido, String nombreRestaurante, boolean mochilaTermica, Repartidor repartidor) {
-        super(idPedido, nombreCliente, direccionDeEntrega, tipoDelPedido);
+    public ServicioComida(int idPedido, String nombreCliente, String direccionDeEntrega, double distanciaKm, String tipoDelPedido, double tiempoEstimadoDeEntrega, boolean tipoDeEntrega, String nombreRestaurante, boolean mochilaTermica, Repartidor repartidor) {
+        super(idPedido, nombreCliente, direccionDeEntrega, distanciaKm, tipoDelPedido, tiempoEstimadoDeEntrega, tipoDeEntrega);
         this.nombreRestaurante = nombreRestaurante;
         this.mochilaTermica = mochilaTermica;
         this.repartidor = repartidor;
@@ -19,7 +19,6 @@ public class ServicioComida extends Pedido implements Mostrable, Repartible {
     public String getNombreRestaurante() {
         return nombreRestaurante;
     }
-
 
     public boolean isMochilaTermica() {
         return mochilaTermica;
@@ -37,13 +36,25 @@ public class ServicioComida extends Pedido implements Mostrable, Repartible {
         System.out.println("Nombre del cliente: " + getNombreCliente());
         System.out.println("Restaurante: " + nombreRestaurante);
         System.out.println("Requiere mochila térmica: " + mochila);
-        repartidor.mostrarInformacion();
+        System.out.println("Dirección destinada: " +  direccionDeEntrega);
+
+    }
+
+    @Override
+    public double calcularTiempoEntrega() {
+
+       double tiempoEstimadoDePreparacion = 15.0;
+       double tiempoDeViaje = distanciaKm * 2.0;
+
+        return tiempoEstimadoDePreparacion + tiempoDeViaje;
     }
 
     @Override
     public void asignarRepartidor() {
         String mochila = mochilaTermica ? "Sí tiene" : "No tiene";
-        System.out.println(" \n Asignando repartidor: " + repartidor.nombreRepartidor + " \n Tipo de vehiculo: " + repartidor.tipoVehiculoRepartidor + " \n Tiene mochila Térmica? " + mochila+ " \n Dirección destinada: " +  direccionDeEntrega);
+        System.out.println(" \n Repartidor asignado: " + repartidor.nombreRepartidor + " \n Tipo de vehiculo: " + repartidor.tipoVehiculoRepartidor + " \n Tiene mochila Térmica? " + mochila);
+        System.out.println();
+        System.out.println(" Tiempo estimado del viaje: " + calcularTiempoEntrega() + " Minutos. ");
         System.out.println(":::::::::::::::::::::::::::::::::::::\n");
     }
 

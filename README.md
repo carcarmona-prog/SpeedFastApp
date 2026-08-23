@@ -1,14 +1,20 @@
 👤 Autor del proyecto:
 
-Carlos Carmona
+Carlos Estivens Carmona Barreto
+
+carcarmona-prog
 
 Carrera:
 
 Analista Programador Computacional.
 
+Instituto: Duoc uc.
+
 📘 Descripción general del sistema SpeedFastApp:
 
 Diseñamos un programa para la gestión de pedidos de la empresa SpeedFastApp, implementando técnicas que mejoren el manejo interno de los distintos tipos de servicios de entrega (comida, compras express y encomiendas), siempre pensando en el crecimiento del sistema. Creamos una base sólida implementando distintas técnicas de POO, para lograr un programa con estructura modular, demostrando el buen uso de la implementación que presta dicha forma de programar.
+
+*Actualización: Esta semana implementamos métodos abstractos con funciones específicas dentro del programa que funciona como estructura util para el cálculo de los tiempos estimados de entrega usando clases abstractas. 
 
 1- Encapsulamiento de clases.
 
@@ -20,6 +26,8 @@ Diseñamos un programa para la gestión de pedidos de la empresa SpeedFastApp, i
 
 5- Separación de estructura.
 
+6- Uso de clases Abstractas.
+
 Estructura del programa:
 
 📁 src/
@@ -27,7 +35,7 @@ Estructura del programa:
 │   └── Main.java
 
 ├── modelo/                   # Clases de dominio
-│   ├── Pedido.java
+│   ├── Pedido.java  (abstract)
 │   ├── Repartidor.java
 │   ├── ServicioComida.java
 │   ├── ServicioComprasExpress.java
@@ -48,4 +56,4 @@ Ejecuta el archivo Main.java desde el paquete app.
 
 Sigue las instrucciones en consola.
 
-Fecha de entrega: 17/08/2026
+Fecha de entrega: 14/08/2026
