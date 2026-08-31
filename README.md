@@ -14,7 +14,9 @@ Instituto: Duoc uc.
 
 Diseñamos un programa para la gestión de pedidos de la empresa SpeedFastApp, implementando técnicas que mejoren el manejo interno de los distintos tipos de servicios de entrega (comida, compras express y encomiendas), siempre pensando en el crecimiento del sistema. Creamos una base sólida implementando distintas técnicas de POO, para lograr un programa con estructura modular, demostrando el buen uso de la implementación que presta dicha forma de programar.
 
-*Actualización: Esta semana implementamos métodos abstractos con funciones específicas dentro del programa que funciona como estructura util para el cálculo de los tiempos estimados de entrega usando clases abstractas. 
+*Actualización semana 2: Esta semana implementamos métodos abstractos con funciones específicas dentro del programa que funciona como estructura util para el cálculo de los tiempos estimados de entrega usando clases abstractas. 
+
+*Actualización semana 3: En la semana 3 implementamos interfaces con la finalidad de crear nuevos contratos de comportamiento usando una estructura aislada de la lógica y asi demostrar la modularidad del diseño orientado a objetos.
 
 1- Encapsulamiento de clases.
 
@@ -43,7 +45,10 @@ Estructura del programa:
 
 ├── interfaces/                # Interfaces y contratos
 │   ├── Mostrable.java
-│   └── Repartible.java
+│   ├── Despachable.java
+│   ├── Cancelable.java
+│   ├── Rastreable.java
+│
 
 
 ⚙️ Instrucciones para clonar y ejecutar el proyecto
@@ -56,4 +61,4 @@ Ejecuta el archivo Main.java desde el paquete app.
 
 Sigue las instrucciones en consola.
 
-Fecha de entrega: 14/08/2026
+Fecha de entrega: 31/08/2026
