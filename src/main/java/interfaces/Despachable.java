@@ -1,6 +1,6 @@
 package interfaces;
 
-public interface Repartible {
+public interface Despachable {
 
     void asignarRepartidor();
 }

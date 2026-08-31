@@ -1,11 +1,9 @@
 package modelo;
 
 import interfaces.Mostrable;
-import interfaces.Repartible;
+import interfaces.Despachable;
 
-import java.util.List;
-
-public class ServicioComprasExpress extends Pedido implements Repartible, Mostrable {
+public class ServicioComprasExpress extends Pedido implements Despachable, Mostrable {
 
 
 

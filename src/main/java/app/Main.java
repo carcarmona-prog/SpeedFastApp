@@ -1,6 +1,6 @@
 package app;
 
-import interfaces.Repartible;
+import interfaces.Despachable;
 import modelo.*;
 
 import java.util.ArrayList;
@@ -31,8 +31,8 @@ public class Main {
 
         for (Pedido pedido : pedidos) {
             pedido.mostrarInformacion();
-            if (pedido instanceof Repartible repartible) {
-                repartible.asignarRepartidor();
+            if (pedido instanceof Despachable despachable) {
+                despachable.asignarRepartidor();
             }
             pedido.mostrarHistorial();
             System.out.println("--------------------------------------------------");

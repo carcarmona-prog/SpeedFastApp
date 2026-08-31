@@ -2,11 +2,9 @@ package modelo;
 
 import interfaces.Cancelable;
 import interfaces.Mostrable;
-import interfaces.Repartible;
+import interfaces.Despachable;
 
-import java.util.List;
-
-public class ServicioComida extends Pedido implements Mostrable, Repartible, Cancelable {
+public class ServicioComida extends Pedido implements Mostrable, Despachable, Cancelable {
 
     private String nombreRestaurante;
     private boolean mochilaTermica;
