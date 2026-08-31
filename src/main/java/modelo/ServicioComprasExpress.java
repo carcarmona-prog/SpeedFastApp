@@ -3,6 +3,8 @@ package modelo;
 import interfaces.Mostrable;
 import interfaces.Repartible;
 
+import java.util.List;
+
 public class ServicioComprasExpress extends Pedido implements Repartible, Mostrable {
 
 
@@ -30,11 +32,11 @@ public class ServicioComprasExpress extends Pedido implements Repartible, Mostra
 
     @Override
     public double calcularTiempoEntrega() {
-        double tiempoArmandoPedido = 20.0;
-        double tiempoDeViaje = distanciaKm * 1.5;
-
-        return tiempoArmandoPedido + tiempoDeViaje;
-    }
+        double tiempoBase = 10.0;
+        if(this.distanciaKm > 5.0) {
+            tiempoBase += 5.0;
+        }
+        return tiempoBase;    }
 
     @Override
     public void asignarRepartidor() {
@@ -45,5 +47,22 @@ public class ServicioComprasExpress extends Pedido implements Repartible, Mostra
                 + " \n Disponibilidad: " + disponibilidad);
         System.out.println();
         System.out.println(" Tiempo estimado del viaje: " + calcularTiempoEntrega() + " minutos.");
+    }
+
+
+
+    @Override
+    public void cancelarPedido() {
+        super.cancelarPedido();
+        historial.add("Compra express #" + IdPedido + " anulada.");
+        System.out.println("Compra express cancelada correctamente.");
+    }
+
+    @Override
+    public void mostrarHistorial() {
+        System.out.println("Historial de la compra express #" + IdPedido + ":");
+        for (String evento : historial) {
+            System.out.println(" - " + evento);
+        }
     }
 }

@@ -28,16 +28,30 @@ public class Main {
         pedidos.add(pedido3);
 
 
+
         for (Pedido pedido : pedidos) {
             pedido.mostrarInformacion();
             if (pedido instanceof Repartible repartible) {
                 repartible.asignarRepartidor();
             }
+            pedido.mostrarHistorial();
+            System.out.println("--------------------------------------------------");
         }
+
+        // Probar la cancelación y ver cómo se actualiza el historial
+        System.out.println(":::::::PEDIDOS CANCELADOS::::::::");
+        pedido1.cancelarPedido();
+        System.out.println();
+        pedido1.mostrarHistorial();
+
 
         System.out.println("\n ::::::::::::: FIN DEL PROCESO ::::::::::::: ");
         System.out.println("Hecho por Carlos Carmona | carcarmona-prog en GitHub.");
 
+        }
+
+
+
 
     }
-}
+

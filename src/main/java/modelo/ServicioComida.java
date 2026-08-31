@@ -1,9 +1,12 @@
 package modelo;
 
+import interfaces.Cancelable;
 import interfaces.Mostrable;
 import interfaces.Repartible;
 
-public class ServicioComida extends Pedido implements Mostrable, Repartible {
+import java.util.List;
+
+public class ServicioComida extends Pedido implements Mostrable, Repartible, Cancelable {
 
     private String nombreRestaurante;
     private boolean mochilaTermica;
@@ -49,6 +52,7 @@ public class ServicioComida extends Pedido implements Mostrable, Repartible {
         return tiempoEstimadoDePreparacion + tiempoDeViaje;
     }
 
+
     @Override
     public void asignarRepartidor() {
         String mochila = mochilaTermica ? "Sí tiene" : "No tiene";
@@ -61,4 +65,20 @@ public class ServicioComida extends Pedido implements Mostrable, Repartible {
 
 
 
+
+    @Override
+    public void cancelarPedido() {
+        super.cancelarPedido(); // cambia el estado y registra en el historial
+        historial.add("Se notificó al restaurante " + nombreRestaurante + " sobre la cancelación.");
+        System.out.println("Se avisó al restaurante " + nombreRestaurante + " que el pedido fue cancelado.");
+        System.out.println("Se notifico al repartidor" + getRepartidor().nombreRepartidor +" que el pedido fue cancelado.");
+    }
+
+    @Override
+    public void mostrarHistorial() {
+        System.out.println("Historial del pedido de comida #" + IdPedido + " (" + nombreRestaurante + "):");
+        for (String evento : historial) {
+            System.out.println(" - " + evento);
+        }
+    }
 }

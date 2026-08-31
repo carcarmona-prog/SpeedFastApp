@@ -3,6 +3,8 @@ package modelo;
 import interfaces.Mostrable;
 import interfaces.Repartible;
 
+import java.util.List;
+
 public class ServicioEncomiendas extends Pedido implements Repartible, Mostrable {
 
     private double pesoEncomienda;
@@ -39,12 +41,12 @@ public class ServicioEncomiendas extends Pedido implements Repartible, Mostrable
 
     @Override
     public double calcularTiempoEntrega() {
-        double tiempoBase = 10.0;
-        if(this.distanciaKm > 5.0) {
-           tiempoBase += 5.0;
-        }
-        return tiempoBase;
+        double tiempoArmandoPedido = 20.0;
+        double tiempoDeViaje = distanciaKm * 1.5;
+
+        return tiempoArmandoPedido + tiempoDeViaje;
     }
+
 
     @Override
     public void asignarRepartidor() {
@@ -55,4 +57,19 @@ public class ServicioEncomiendas extends Pedido implements Repartible, Mostrable
         System.out.println(":::::::::::::::::::::::::::::::::::::\n");
     }
 
+
+    @Override
+    public void cancelarPedido() {
+        super.cancelarPedido();
+        historial.add("Encomienda " + IdPedido + " cancelada, se notificó al remitente.");
+        System.out.println("Encomienda cancelada y remitente notificado.");
+    }
+
+    @Override
+    public void mostrarHistorial() {
+        System.out.println("Historial de la encomienda " + IdPedido + ":");
+        for (String evento : historial) {
+            System.out.println(" - " + evento);
+        }
+    }
 }
