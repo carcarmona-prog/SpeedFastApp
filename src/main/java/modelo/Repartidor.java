@@ -4,12 +4,18 @@ import interfaces.Mostrable;
 
 public class Repartidor implements Mostrable {
 
+
     protected String nombreRepartidor;
+    protected boolean disponibilidadInmediata;
     protected boolean mochilaTermica;
     protected String tipoVehiculoRepartidor;
-    protected boolean disponibilidadInmediata;
+
+    public Repartidor(String nombreRepartidor) {
+        this.nombreRepartidor = nombreRepartidor;
+    }
 
     public Repartidor(String nombreRepartidor, boolean mochilaTermica, String tipoVehiculoRepartidor, boolean disponibilidadInmediata) {
+
         this.nombreRepartidor = nombreRepartidor;
         this.mochilaTermica = mochilaTermica;
         this.tipoVehiculoRepartidor = tipoVehiculoRepartidor;
@@ -34,15 +40,24 @@ public class Repartidor implements Mostrable {
 
 
     @Override
-    public void mostrarInformacion() {
+    public String toString() {
         String mochila = mochilaTermica ? "Sí tiene" : "No tiene";
         String disponibilidad = disponibilidadInmediata ? "Disponible ahora" : "No disponible";
 
-        System.out.println(" Nombre Repartidor: " + nombreRepartidor
-                + " \n Tipo de vehículo: " + tipoVehiculoRepartidor
-                + " \n Mochila térmica: " + mochila
-                + " \n Disponibilidad: " + disponibilidad);
+        return "Nombre Repartidor: " + nombreRepartidor
+                + " | Tipo de vehículo: " + tipoVehiculoRepartidor
+                + " | Mochila térmica: " + mochila
+                + " | Disponibilidad: " + disponibilidad;
     }
+
+    @Override
+    public void mostrarInformacion() {
+        System.out.println(toString());
+    }
+
+
+
+
 
 
 }

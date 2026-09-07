@@ -21,11 +21,16 @@ public class ServicioComprasExpress extends Pedido implements Despachable, Mostr
 
     @Override
 
-    public void mostrarInformacion() {
+    public String toString() {
 
         System.out.println(" \n Id de la compra: " + getIdPedido() + " \n A nombre de:" + getNombreCliente() + " \n Dirección destinada: " + direccionDeEntrega + " \n Tipo de pedido: " + getTipoDelPedido()  );
 
 
+        return null;
+    }
+    @Override
+    public void mostrarInformacion() {
+        System.out.println(toString());
     }
 
     @Override
@@ -62,5 +67,10 @@ public class ServicioComprasExpress extends Pedido implements Despachable, Mostr
         for (String evento : historial) {
             System.out.println(" - " + evento);
         }
+    }
+
+    @Override
+    public void setEstadoPedido(EstadoPedido estadoPedido) {
+
     }
 }

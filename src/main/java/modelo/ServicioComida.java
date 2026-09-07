@@ -30,7 +30,7 @@ public class ServicioComida extends Pedido implements Mostrable, Despachable, Ca
     }
 
     @Override
-    public void mostrarInformacion() {
+    public String toString() {
 
         String mochila = mochilaTermica ? "Sí requiere" : "No es necesario";
         System.out.println("Id del pedido: " + getIdPedido());
@@ -39,6 +39,11 @@ public class ServicioComida extends Pedido implements Mostrable, Despachable, Ca
         System.out.println("Requiere mochila térmica: " + mochila);
         System.out.println("Dirección destinada: " +  direccionDeEntrega);
 
+        return "";
+    }
+    @Override
+    public void mostrarInformacion() {
+        System.out.println(toString());
     }
 
     @Override
@@ -78,5 +83,10 @@ public class ServicioComida extends Pedido implements Mostrable, Despachable, Ca
         for (String evento : historial) {
             System.out.println(" - " + evento);
         }
+    }
+
+    @Override
+    public void setEstadoPedido(EstadoPedido estadoPedido) {
+
     }
 }

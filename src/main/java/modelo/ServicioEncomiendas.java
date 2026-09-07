@@ -30,12 +30,18 @@ public class ServicioEncomiendas extends Pedido implements Despachable, Mostrabl
     }
 
     @Override
-    public void mostrarInformacion() {
+    public String toString() {
 
         System.out.println(" \n Id pedido: " + getIdPedido() + " \n Nombre del cliente: " + getNombreCliente() +  " \n Peso: " + pesoEncomienda + " kg " +  " \n Embalaje: " + tipoDeEmbalaje + " \n Dirección destinada: " +  direccionDeEntrega);
 
 
+        return null;
     }
+    @Override
+    public void mostrarInformacion() {
+        System.out.println(toString());
+    }
+
 
     @Override
     public double calcularTiempoEntrega() {
@@ -69,5 +75,10 @@ public class ServicioEncomiendas extends Pedido implements Despachable, Mostrabl
         for (String evento : historial) {
             System.out.println(" - " + evento);
         }
+    }
+
+    @Override
+    public void setEstadoPedido(EstadoPedido estadoPedido) {
+
     }
 }

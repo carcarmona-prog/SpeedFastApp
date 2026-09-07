@@ -20,6 +20,7 @@ public abstract class Pedido implements  Mostrable, Cancelable, Rastreable {
     protected List<String> historial;
 
 
+
     public Pedido(int idPedido, String nombreCliente, String direccionDeEntrega, double distanciaKm, String tipoDelPedido, double tiempoEstimadoDeEntrega, boolean tipoDeEntrega) {
         IdPedido = idPedido;
         this.nombreCliente = nombreCliente;
@@ -35,7 +36,7 @@ public abstract class Pedido implements  Mostrable, Cancelable, Rastreable {
 
     }
 
-    public String getEstado() {
+    public String getEstado(EstadoPedido enPreparacion) {
         return estado;
     }
 
@@ -71,6 +72,7 @@ public abstract class Pedido implements  Mostrable, Cancelable, Rastreable {
     @Override
     public void mostrarInformacion() {
         System.out.println("IdPedido: " + IdPedido + " dirección de entrega: " + direccionDeEntrega + " tipo del pedido: " + tipoDelPedido + " estado: " + estado);
+
     }
 
     public abstract double calcularTiempoEntrega();
@@ -95,4 +97,6 @@ public abstract class Pedido implements  Mostrable, Cancelable, Rastreable {
         }
     }
 
+
+    public abstract void setEstadoPedido(EstadoPedido estadoPedido);
 }
