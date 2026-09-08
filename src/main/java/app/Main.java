@@ -6,6 +6,13 @@ import tareas.PrepararPedido;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+
+/**
+ * Clase principal donde aplicamos la lógica del programa para evidenciar el funcionamiento polimórfico del código.
+ */
 
 public class Main {
 
@@ -52,9 +59,15 @@ public class Main {
 
         PedidoSync pedidoSync3 = new PedidoSync(3, "Maria Love", 25, "Combo Kids", 2, PrioridadPedido.NORMAL,new Repartidor("Ramonete Ramirez", true, "moto", true));
 
+        /**
+         * En esta sección del main relalizamos la utilizacion de los Threads a traves de ExecutorService, para administrar
+         * los hilos y que terminen de manera limpia.
+         */
         System.out.println(":::::::INICIANDO HILOS::::::::\n");
 
         System.out.println(" ::::::::::::: PREPARANDO PEDIDOS ::::::::::::: ");
+
+        ExecutorService executor = Executors.newFixedThreadPool(3); // uno por cada PedidoSync
 
 
         pedidoSync1.mostrarInformacion();
@@ -64,22 +77,26 @@ public class Main {
         pedidoSync3.mostrarInformacion();
 
 
-        Thread hiloPedido1 = new Thread(new PrepararPedido(pedidoSync1), "Estado: pedido 1");
+        executor.submit(new PrepararPedido(pedidoSync1));
         System.out.println();
-        Thread hiloPedido2 = new Thread(new PrepararPedido(pedidoSync2), "Estado: pedido 2");
+        executor.submit(new PrepararPedido(pedidoSync2));
         System.out.println();
-        Thread hiloPedido3 = new Thread(new PrepararPedido(pedidoSync3), "Estado: pedido 3");
+        executor.submit(new PrepararPedido(pedidoSync3));
 
         long tiempoEjecucion = System.currentTimeMillis();
 
-        hiloPedido1.start();
-        System.out.println();
-        hiloPedido2.start();
-        System.out.println();
-        hiloPedido3.start();
+        executor.shutdown();
 
-        Thread.currentThread().interrupt();
-            System.out.println("::: simulación ::: ");
+        try {
+            if (!executor.awaitTermination(30, TimeUnit.SECONDS)) {
+                executor.shutdownNow();
+            }
+        } catch (InterruptedException e) {
+            executor.shutdownNow();
+            Thread.currentThread().interrupt();
+        }
+
+        System.out.println("::: simulación finalizada ::: ");
 
         }
 

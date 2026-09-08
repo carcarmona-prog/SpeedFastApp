@@ -7,6 +7,10 @@ import interfaces.Rastreable;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Clase abstracta que define los atributos de los pedidos y sirve como clase Padre del programa.
+ */
+
 public abstract class Pedido implements  Mostrable, Cancelable, Rastreable {
 
     protected int IdPedido;

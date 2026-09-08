@@ -4,6 +4,11 @@ import interfaces.Cancelable;
 import interfaces.Mostrable;
 import interfaces.Despachable;
 
+/**
+ * Clase base para los atributos y la logica del servicio de comida.
+ * Extiende atributos de Pedido, e implementa interfaces para el cumplimiento de las funciones requeridas.
+ */
+
 public class ServicioComida extends Pedido implements Mostrable, Despachable, Cancelable {
 
     private String nombreRestaurante;

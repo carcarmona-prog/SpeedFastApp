@@ -3,6 +3,11 @@ package modelo;
 import interfaces.Mostrable;
 import interfaces.Despachable;
 
+/**
+ * Clase base para los atributos y de la logica del Servicio de encomiendas.
+ * Extiende atributos de Pedido, e implementa interfaces para el cumplimiento de las funciones requeridas.
+ */
+
 public class ServicioEncomiendas extends Pedido implements Despachable, Mostrable {
 
     private double pesoEncomienda;

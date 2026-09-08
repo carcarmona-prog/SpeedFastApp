@@ -2,6 +2,11 @@ package modelo;
 
 import interfaces.Mostrable;
 
+/**
+ * Clase que define los atributos del objeto repartidor.
+ * Implementa Mostrable para la utilización de su comportamiento.
+ */
+
 public class Repartidor implements Mostrable {
 
 

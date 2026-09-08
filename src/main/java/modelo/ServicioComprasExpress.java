@@ -3,6 +3,11 @@ package modelo;
 import interfaces.Mostrable;
 import interfaces.Despachable;
 
+/**
+ * Clase base para los atributos y la logica del servicio de compras express.
+ * Extiende atributos de Pedido, e implementa interfaces para el cumplimiento de las funciones requeridas.
+ */
+
 public class ServicioComprasExpress extends Pedido implements Despachable, Mostrable {
 
 

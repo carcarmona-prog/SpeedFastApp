@@ -3,9 +3,13 @@ package tareas;
 import modelo.EstadoPedido;
 import modelo.PedidoSync;
 
+/**
+ *  Clase encargada de la lógica del estado de preparación de los pedidos solicitados,
+ *  implementa Runnable para cumplir con la función Run() y asi ejecutar los hilos de manera correcta.
+ */
+
 public class PrepararPedido implements Runnable {
     private PedidoSync pedidoSync;
-
 
 
     public PrepararPedido(PedidoSync pedido) {

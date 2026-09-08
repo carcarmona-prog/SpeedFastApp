@@ -2,7 +2,14 @@ package modelo;
 
 import interfaces.Mostrable;
 
+/**
+ *  Clase creada para la lógica separa de los pedidos que requieran Hilos para su funcionamiento,
+ *  con atributos propios, constructores y validaciones de datos,
+ *   también se implementa la interfaz Mostrable para reutilizar esa función con base en lo que queremos mortar en la consola
+ */
+
 public class PedidoSync implements Mostrable {
+
     private final int numero;
     private final String cliente;
     private final int tiempoPreparacion;
@@ -11,8 +18,6 @@ public class PedidoSync implements Mostrable {
     private final PrioridadPedido prioridad;
     private volatile EstadoPedido estadoPedido;
     private final Repartidor repartidor;
-
-
 
 
     public PedidoSync(int numero, String cliente, int tiempoPreparacion, String producto, int cantidad, PrioridadPedido prioridad, Repartidor repartidor) {
