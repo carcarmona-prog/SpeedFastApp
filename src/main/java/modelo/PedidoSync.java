@@ -8,7 +8,7 @@ import interfaces.Mostrable;
  *   también se implementa la interfaz Mostrable para reutilizar esa función con base en lo que queremos mortar en la consola
  */
 
-public class PedidoSync implements Mostrable {
+public class PedidoSync extends Pedido implements Mostrable {
 
     private final int numero;
     private final String cliente;
@@ -21,6 +21,7 @@ public class PedidoSync implements Mostrable {
 
 
     public PedidoSync(int numero, String cliente, int tiempoPreparacion, String producto, int cantidad, PrioridadPedido prioridad, Repartidor repartidor) {
+        super();
         this.repartidor = repartidor;
         //validaciones
         if(numero <= 0) {
@@ -91,4 +92,10 @@ public class PedidoSync implements Mostrable {
                 numero, cliente, producto, tiempoPreparacion, prioridad, estadoPedido, repartidor);
 
     }
+
+    @Override
+    public double calcularTiempoEntrega() {
+        return 0;
+    }
+
 }

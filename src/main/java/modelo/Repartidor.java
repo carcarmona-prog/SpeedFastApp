@@ -1,13 +1,14 @@
 package modelo;
 
 import interfaces.Mostrable;
+import tareas.ZonaDeCarga;
 
 /**
  * Clase que define los atributos del objeto repartidor.
  * Implementa Mostrable para la utilización de su comportamiento.
  */
 
-public class Repartidor implements Mostrable {
+public class Repartidor implements Mostrable, Runnable {
 
 
     protected String nombreRepartidor;
@@ -15,16 +16,17 @@ public class Repartidor implements Mostrable {
     protected boolean mochilaTermica;
     protected String tipoVehiculoRepartidor;
 
+
     public Repartidor(String nombreRepartidor) {
         this.nombreRepartidor = nombreRepartidor;
     }
 
-    public Repartidor(String nombreRepartidor, boolean mochilaTermica, String tipoVehiculoRepartidor, boolean disponibilidadInmediata) {
-
+    public Repartidor(String nombreRepartidor, boolean disponibilidadInmediata,String tipoVehiculoRepartidor, boolean mochilaTermica) {
         this.nombreRepartidor = nombreRepartidor;
+        this.disponibilidadInmediata = disponibilidadInmediata;
         this.mochilaTermica = mochilaTermica;
         this.tipoVehiculoRepartidor = tipoVehiculoRepartidor;
-        this.disponibilidadInmediata = disponibilidadInmediata;
+
     }
 
     public String getNombreRepartidor() {
@@ -44,6 +46,7 @@ public class Repartidor implements Mostrable {
     }
 
 
+
     @Override
     public String toString() {
         String mochila = mochilaTermica ? "Sí tiene" : "No tiene";
@@ -61,8 +64,8 @@ public class Repartidor implements Mostrable {
     }
 
 
+    @Override
+    public void run() {
 
-
-
-
+    }
 }

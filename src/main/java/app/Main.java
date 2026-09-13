@@ -2,6 +2,9 @@ package app;
 
 import interfaces.Despachable;
 import modelo.*;
+import modelo.ServicioComida;
+import modelo.ServicioComprasExpress;
+import modelo.ServicioEncomiendas;
 import tareas.PrepararPedido;
 
 import java.util.ArrayList;
@@ -83,7 +86,6 @@ public class Main {
         System.out.println();
         executor.submit(new PrepararPedido(pedidoSync3));
 
-        long tiempoEjecucion = System.currentTimeMillis();
 
         executor.shutdown();
 

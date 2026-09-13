@@ -28,7 +28,7 @@ public class PrepararPedido implements Runnable {
 
         try {
             Thread.sleep(pedidoSync.getTiempoPreparacion() * 1_000L);
-            pedidoSync.setEstadoPedido(EstadoPedido.LISTO);
+            pedidoSync.setEstadoPedido(EstadoPedido.ENTREGADO);
             System.out.printf("Pedido %d - %s  [%s] Listo para repartir%n",
                     pedidoSync.getNumero(), pedidoSync.getCliente(), nombreHilo);
 
