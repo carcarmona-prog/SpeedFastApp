@@ -6,8 +6,8 @@ import tareas.ZonaDeCarga;
 /**
  * Clase que define los atributos del objeto repartidor.
  * Implementa Mostrable para la utilización de su comportamiento.
+ *
  */
-
 public class Repartidor implements Mostrable, Runnable {
 
 
@@ -15,6 +15,8 @@ public class Repartidor implements Mostrable, Runnable {
     protected boolean disponibilidadInmediata;
     protected boolean mochilaTermica;
     protected String tipoVehiculoRepartidor;
+
+    private ZonaDeCarga zonaDeCarga;
 
 
     public Repartidor(String nombreRepartidor) {
@@ -27,6 +29,15 @@ public class Repartidor implements Mostrable, Runnable {
         this.mochilaTermica = mochilaTermica;
         this.tipoVehiculoRepartidor = tipoVehiculoRepartidor;
 
+    }
+
+    /**
+     *  Repartidor que trabaja de forma
+     * independiente retirando pedidos desde la zona de carga.
+     */
+    public Repartidor(String nombreRepartidor, ZonaDeCarga zonaDeCarga) {
+        this.nombreRepartidor = nombreRepartidor;
+        this.zonaDeCarga = zonaDeCarga;
     }
 
     public String getNombreRepartidor() {
@@ -64,8 +75,35 @@ public class Repartidor implements Mostrable, Runnable {
     }
 
 
+
     @Override
     public void run() {
+        if (zonaDeCarga == null) {
 
+            return;
+        }
+
+        String nombreHilo = Thread.currentThread().getName();
+        PedidoSync pedido;
+
+        while ((pedido = zonaDeCarga.retirarPedido()) != null) {
+            pedido.setEstadoPedido(EstadoPedido.EN_REPARTO);
+            System.out.printf("[%s] %s retiró el pedido %d (%s) -> EN_REPARTO%n",
+                    nombreHilo, nombreRepartidor, pedido.getNumero(), pedido.getDireccionEntrega());
+
+            try {
+                Thread.sleep(pedido.getTiempoPreparacion() * 1_000L);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                return;
+            }
+
+            pedido.setEstadoPedido(EstadoPedido.ENTREGADO);
+            System.out.printf("[%s] %s entregó el pedido %d a %s -> ENTREGADO%n",
+                    nombreHilo, nombreRepartidor, pedido.getNumero(), pedido.getCliente());
+        }
+
+        System.out.printf("[%s] %s no tiene más pedidos que retirar, finaliza.%n",
+                nombreHilo, nombreRepartidor);
     }
 }

@@ -12,6 +12,7 @@ public class PedidoSync extends Pedido implements Mostrable {
 
     private final int numero;
     private final String cliente;
+    private final String direccionEntrega;
     private final int tiempoPreparacion;
     private final String producto;
     private final int cantidad;
@@ -20,7 +21,7 @@ public class PedidoSync extends Pedido implements Mostrable {
     private final Repartidor repartidor;
 
 
-    public PedidoSync(int numero, String cliente, int tiempoPreparacion, String producto, int cantidad, PrioridadPedido prioridad, Repartidor repartidor) {
+    public PedidoSync(int numero, String cliente, String direccionEntrega, int tiempoPreparacion, String producto, int cantidad, PrioridadPedido prioridad, Repartidor repartidor) {
         super();
         this.repartidor = repartidor;
         //validaciones
@@ -29,6 +30,9 @@ public class PedidoSync extends Pedido implements Mostrable {
         }
         if(cliente == null || cliente.isBlank()) {
             throw new IllegalArgumentException("El cliente no debe ser nulo ni vacio");
+        }
+        if(direccionEntrega == null || direccionEntrega.isBlank()) {
+            throw new IllegalArgumentException("La direccion de entrega no debe ser nula ni vacia");
         }
         if(tiempoPreparacion <= 0) {
             throw new IllegalArgumentException("El tiempo debe ser mayor que 0");
@@ -45,6 +49,7 @@ public class PedidoSync extends Pedido implements Mostrable {
         }
         this.numero = numero;
         this.cliente = cliente;
+        this.direccionEntrega = direccionEntrega;
         this.tiempoPreparacion = tiempoPreparacion;
         this.producto = producto;
         this.cantidad = cantidad;
@@ -58,6 +63,10 @@ public class PedidoSync extends Pedido implements Mostrable {
 
     public String getCliente() {
         return cliente;
+    }
+
+    public String getDireccionEntrega() {
+        return direccionEntrega;
     }
 
     public int getTiempoPreparacion() {
@@ -88,8 +97,8 @@ public class PedidoSync extends Pedido implements Mostrable {
 
     @Override
     public void mostrarInformacion() {
-        System.out.printf("Pedido: %d | Cliente: %s | Producto: %s | Tiempo de preparación: %d | Prioridad: %s | Estado: %s |\nRepartidor: %s%n",
-                numero, cliente, producto, tiempoPreparacion, prioridad, estadoPedido, repartidor);
+        System.out.printf("Pedido: %d | Cliente: %s | Dirección: %s | Producto: %s | Tiempo de preparación: %d | Prioridad: %s | Estado: %s |\nRepartidor: %s%n",
+                numero, cliente, direccionEntrega, producto, tiempoPreparacion, prioridad, estadoPedido, repartidor);
 
     }
 

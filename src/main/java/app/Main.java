@@ -6,6 +6,7 @@ import modelo.ServicioComida;
 import modelo.ServicioComprasExpress;
 import modelo.ServicioEncomiendas;
 import tareas.PrepararPedido;
+import tareas.ZonaDeCarga;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -56,11 +57,11 @@ public class Main {
 
         System.out.println("--------------------------------------------------");
 
-        PedidoSync pedidoSync1 = new PedidoSync(1, "Ramonete Rojas", 20, "Servicio oficina", 1, PrioridadPedido.NORMAL,new Repartidor("ana diaz",true,"moto", true ));
+        PedidoSync pedidoSync1 = new PedidoSync(1, "Ramonete Rojas", "Oficina central, piso 3", 20, "Servicio oficina", 1, PrioridadPedido.NORMAL, new Repartidor("ana diaz", true, "moto", true));
 
-        PedidoSync pedidoSync2 = new PedidoSync(2, "Willian Rivas", 15, "Encomienda importante", 3, PrioridadPedido.ALTA,new Repartidor("ruben luz", true, "farmacia", true));
+        PedidoSync pedidoSync2 = new PedidoSync(2, "Willian Rivas", "Bodega norte, bloque C", 15, "Encomienda importante", 3, PrioridadPedido.ALTA, new Repartidor("ruben luz", true, "farmacia", true));
 
-        PedidoSync pedidoSync3 = new PedidoSync(3, "Maria Love", 25, "Combo Kids", 2, PrioridadPedido.NORMAL,new Repartidor("Ramonete Ramirez", true, "moto", true));
+        PedidoSync pedidoSync3 = new PedidoSync(3, "Maria Love", "Colegio San Andrés, portería", 25, "Combo Kids", 2, PrioridadPedido.NORMAL, new Repartidor("Ramonete Ramirez", true, "moto", true));
 
         /**
          * En esta sección del main relalizamos la utilizacion de los Threads a traves de ExecutorService, para administrar
@@ -100,15 +101,44 @@ public class Main {
 
         System.out.println("::: simulación finalizada ::: ");
 
+        // =========================================================
+        // PASO 5: Zona de carga compartida + repartidores concurrentes
+        // =========================================================
+        System.out.println();
+        System.out.println(":::::::::::::: ZONA DE CARGA Y REPARTIDORES ::::::::::::::\n");
+
+        ZonaDeCarga zonaDeCarga = new ZonaDeCarga();
+
+        zonaDeCarga.agregarPedido(new PedidoSync(101, "Carla Soto", "Av. Pajaritos 1500", 2, "Pizza familiar", 1, PrioridadPedido.NORMAL, new Repartidor("Por asignar")));
+        zonaDeCarga.agregarPedido(new PedidoSync(102, "Matías Fuentes", "Los Alerces 245", 3, "Sushi combo", 2, PrioridadPedido.ALTA, new Repartidor("Por asignar")));
+        zonaDeCarga.agregarPedido(new PedidoSync(103, "Fernanda Vidal", "Camino La Farfana 88", 1, "Documentos urgentes", 1, PrioridadPedido.ALTA, new Repartidor("Por asignar")));
+        zonaDeCarga.agregarPedido(new PedidoSync(104, "Ignacio Bravo", "Pasaje Los Robles 12", 2, "Compra supermercado", 3, PrioridadPedido.NORMAL, new Repartidor("Por asignar")));
+        zonaDeCarga.agregarPedido(new PedidoSync(105, "Valentina Rojas", "Av. 5 de Abril 900", 2, "Medicamentos", 1, PrioridadPedido.ALTA, new Repartidor("Por asignar")));
+
+        // A partir de aquí ya no llegarán más pedidos: los repartidores
+        // podrán terminar su hilo apenas la zona de carga quede vacía.
+        zonaDeCarga.cerrarZona();
+
+        Repartidor repartidor1 = new Repartidor("Camila Reyes", zonaDeCarga);
+        Repartidor repartidor2 = new Repartidor("Jorge Pino", zonaDeCarga);
+        Repartidor repartidor3 = new Repartidor("Felipe Soto", zonaDeCarga);
+
+        ExecutorService executorRepartidores = Executors.newFixedThreadPool(3);
+        executorRepartidores.submit(repartidor1);
+        executorRepartidores.submit(repartidor2);
+        executorRepartidores.submit(repartidor3);
+
+        executorRepartidores.shutdown();
+
+        try {
+            if (!executorRepartidores.awaitTermination(30, TimeUnit.SECONDS)) {
+                executorRepartidores.shutdownNow();
+            }
+        } catch (InterruptedException e) {
+            executorRepartidores.shutdownNow();
+            Thread.currentThread().interrupt();
         }
 
-
-
-
+        System.out.println("\nTodos los pedidos han sido entregados correctamente.");
     }
-
-
-
-
-
-
+}
