@@ -5,8 +5,8 @@ import modelo.*;
 import modelo.ServicioComida;
 import modelo.ServicioComprasExpress;
 import modelo.ServicioEncomiendas;
-import tareas.PrepararPedido;
-import tareas.ZonaDeCarga;
+import gestores.PrepararPedido;
+import gestores.ZonaDeCarga;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -5,7 +5,7 @@ import interfaces.Mostrable;
 /**
  *  Clase creada para la lógica separa de los pedidos que requieran Hilos para su funcionamiento,
  *  con atributos propios, constructores y validaciones de datos,
- *   también se implementa la interfaz Mostrable para reutilizar esa función con base en lo que queremos mortar en la consola
+ *   también se implementa la interfaz Mostrable para reutilizar esa función con base en lo que queremos mostrar en la consola
  */
 
 public class PedidoSync extends Pedido implements Mostrable {
@@ -29,23 +29,23 @@ public class PedidoSync extends Pedido implements Mostrable {
             throw new IllegalArgumentException("El numero debe ser mayor que 0");
         }
         if(cliente == null || cliente.isBlank()) {
-            throw new IllegalArgumentException("El cliente no debe ser nulo ni vacio");
+            throw new IllegalArgumentException("El cliente no debe ser nulo ni vacío");
         }
         if(direccionEntrega == null || direccionEntrega.isBlank()) {
-            throw new IllegalArgumentException("La direccion de entrega no debe ser nula ni vacia");
+            throw new IllegalArgumentException("La dirección de entrega no debe ser nula ni vacía");
         }
         if(tiempoPreparacion <= 0) {
             throw new IllegalArgumentException("El tiempo debe ser mayor que 0");
         }
         if(producto == null || producto.isBlank()) {
-            throw new IllegalArgumentException("El producto no debe ser nulo ni vacio");
+            throw new IllegalArgumentException("El producto no debe ser nulo ni vacío");
 
         }
         if(cantidad <= 0) {
             throw new IllegalArgumentException("El cantidad debe ser mayor que 0");
         }
         if(prioridad == null) {
-            throw new IllegalArgumentException("El prioridad no debe ser nulo ni vacio");
+            throw new IllegalArgumentException("El prioridad no debe ser nulo ni vacío");
         }
         this.numero = numero;
         this.cliente = cliente;
@@ -88,7 +88,7 @@ public class PedidoSync extends Pedido implements Mostrable {
     public EstadoPedido getEstadoPedido() {
         return estadoPedido;
     }
-    public synchronized  void setEstadoPedido(EstadoPedido nuevoEstado) {
+    public synchronized void setEstadoPedido(EstadoPedido nuevoEstado) {
         if(nuevoEstado == null) {
             throw new IllegalArgumentException("El nuevo estado no debe ser nulo");
         }

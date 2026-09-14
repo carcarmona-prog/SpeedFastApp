@@ -1,4 +1,4 @@
-package tareas;
+package gestores;
 
 import modelo.EstadoPedido;
 import modelo.PedidoSync;

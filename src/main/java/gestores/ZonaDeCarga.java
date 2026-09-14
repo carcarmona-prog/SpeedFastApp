@@ -1,4 +1,4 @@
-package tareas;
+package gestores;
 
 import modelo.PedidoSync;
 
@@ -12,6 +12,7 @@ import java.util.concurrent.LinkedBlockingDeque;
 public class ZonaDeCarga {
 
     private final BlockingDeque<PedidoSync> pedidosPendientes;
+
     private boolean sinMasPedidos = false;
 
     public ZonaDeCarga() {

@@ -1,7 +1,7 @@
 package modelo;
 
 import interfaces.Mostrable;
-import tareas.ZonaDeCarga;
+import gestores.ZonaDeCarga;
 
 /**
  * Clase que define los atributos del objeto repartidor.

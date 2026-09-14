@@ -62,7 +62,7 @@ Estructura del programa:
 │   ├── Cancelable.java
 │   └── Rastreable.java
 
-├── tareas/                     # Concurrencia
+├── gestores/                     # Concurrencia
 │   ├── PrepararPedido.java      # Runnable: simula la preparación de un pedido
 │   └── ZonaDeCarga.java         # Recurso compartido (synchronized) entre repartidores
 
