@@ -124,6 +124,7 @@ public class Main {
         Repartidor repartidor3 = new Repartidor("Felipe Soto", zonaDeCarga);
 
         ExecutorService executorRepartidores = Executors.newFixedThreadPool(3);
+
         executorRepartidores.submit(repartidor1);
         executorRepartidores.submit(repartidor2);
         executorRepartidores.submit(repartidor3);

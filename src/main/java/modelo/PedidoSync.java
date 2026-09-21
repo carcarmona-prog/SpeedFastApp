@@ -88,6 +88,7 @@ public class PedidoSync extends Pedido implements Mostrable {
     public EstadoPedido getEstadoPedido() {
         return estadoPedido;
     }
+
     public synchronized void setEstadoPedido(EstadoPedido nuevoEstado) {
         if(nuevoEstado == null) {
             throw new IllegalArgumentException("El nuevo estado no debe ser nulo");
