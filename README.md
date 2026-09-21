@@ -24,6 +24,8 @@ Diseñamos un programa para la gestión de pedidos de la empresa SpeedFastApp, i
 
 *Actualización semana 5: Resolvimos el problema de coordinación de entregas: varios repartidores retirando pedidos al mismo tiempo desde una misma zona de carga, lo que podía provocar errores o entregas duplicadas. Se implementó la clase ZonaDeCarga como recurso compartido, usando synchronized para controlar el acceso concurrente y garantizar que cada pedido sea retirado y entregado por un único repartidor. La clase Repartidor ahora también puede ejecutarse como hilo (Runnable), retirando pedidos de la zona de carga, actualizando su estado (EN_REPARTO → ENTREGADO) y simulando la entrega con Thread.sleep().
 
+*Actualización semana 6: Le agregamos una interfaz gráfica de escritorio al sistema, usando Java Swing. Ahora se pueden registrar pedidos, listarlos en una tabla y asignarles un repartidor para simular el inicio de la entrega, todo desde ventanas en vez de la consola. Separamos la lógica en capas (vista / controlador / data), reutilizando las clases del modelo (Pedido, Repartidor) que ya teníamos de semanas anteriores. Esta separación de responsabilidades demostró su valor esta misma semana: se eliminaron por completo las clases de login y gestión de usuarios (que no correspondían al enunciado) sin que el resto del programa se viera afectado.
+
 1- Encapsulamiento de clases.
 
 2- Herencia de clases.
@@ -40,37 +42,54 @@ Diseñamos un programa para la gestión de pedidos de la empresa SpeedFastApp, i
 
 8- Sincronización de recursos compartidos (synchronized, wait/notifyAll).
 
+9- Interfaz gráfica de escritorio con Java Swing (JFrame, JTable, JComboBox, CardLayout).
+
+10- Separación de responsabilidades por capas (vista, controlador, data, modelo).
+
 Estructura del programa:
 
-📁 src/
-├── app/                       # Clase con método main
+📁 src/main/java/
+├── app/                        # Demo de consola de semanas anteriores
 │   └── Main.java
 
-├── modelo/                    # Clases de dominio
-│   ├── Pedido.java              (abstract)
-│   ├── Repartidor.java          (Mostrable, Runnable)
+├── main/                       # Punto de entrada de la GUI
+│   └── Main.java                # new VentanaPrincipal()
+
+├── modelo/                     # Clases de dominio
+│   ├── Pedido.java               (abstract)
+│   ├── Repartidor.java           (Mostrable, Runnable)
 │   ├── ServicioComida.java
 │   ├── ServicioComprasExpress.java
 │   ├── ServicioEncomiendas.java
-│   ├── PedidoSync.java          # Pedido preparado para trabajar con hilos
-│   ├── EstadoPedido.java        # Enum: PENDIENTE, EN_PREPARACION, EN_REPARTO, ENTREGADO, CANCELADO
-│   └── PrioridadPedido.java     # Enum: NORMAL, ALTA
+│   ├── PedidoSync.java           # Pedido preparado para trabajar con hilos
+│   ├── EstadoPedido.java         # Enum: PENDIENTE, EN_PREPARACION, EN_REPARTO, ENTREGADO, CANCELADO
+│   └── PrioridadPedido.java      # Enum: NORMAL, ALTA
 
-├── interfaces/                # Interfaces y contratos
+├── interfaces/                 # Interfaces y contratos
 │   ├── Mostrable.java
-│   ├── Despachable.java
+│   ├── Despachable.java          # asignarRepartidor() + setRepartidor()
 │   ├── Cancelable.java
 │   └── Rastreable.java
 
-├── gestores/                     # Concurrencia
-│   ├── PrepararPedido.java      # Runnable: simula la preparación de un pedido
-│   └── ZonaDeCarga.java         # Recurso compartido (synchronized) entre repartidores
+├── gestores/                   # Concurrencia
+│   ├── PrepararPedido.java       # Runnable: simula la preparación de un pedido
+│   └── ZonaDeCarga.java          # Recurso compartido (synchronized) entre repartidores
 
-🧵 Sobre la concurrencia (ZonaDeCarga y Repartidor):
+├── data/                        # Datos compartidos en memoria
+│   └── PedidoData.java           # Lista estática de pedidos registrados
 
-La ZonaDeCarga almacena los pedidos pendientes en una BlockingDeque<PedidoSync> y expone dos métodos synchronized: agregarPedido() y retirarPedido(). Al ser synchronized, solo un hilo a la vez puede ejecutar cualquiera de los dos métodos sobre la misma instancia, lo que garantiza que ningún pedido pueda ser retirado dos veces. Si la zona de carga está vacía, los repartidores quedan en espera (wait()) hasta que llegue un nuevo pedido o se cierre la zona (cerrarZona()).
+├── controlador/                 # Lógica entre la vista y los datos
+│   └── PedidoControlador.java
 
-Repartidor, además de sus datos habituales (nombre, vehículo, disponibilidad), puede ejecutarse como hilo: retira un pedido, cambia su estado a EN_REPARTO, simula la entrega con Thread.sleep() y finalmente lo marca como ENTREGADO. Esto se repite hasta que ya no quedan pedidos disponibles.
+└── vista/                       # Interfaz gráfica (Swing)
+├── VentanaPrincipal.java     # Ventana principal: 3 botones de navegación
+├── VentanaRegistroPedido.java# Formulario de registro (ID, Cliente, Dirección, Tipo, ...)
+├── VentanaListaPedidos.java  # Tabla de pedidos (JTable + DefaultTableModel)
+└── VentanaAsignarRepartidor.java # Asigna repartidor y simula la entrega en un hilo aparte
+
+🖥️ Sobre la interfaz gráfica (Swing):
+
+VentanaPrincipal es el punto de partida: desde ahí se abren las otras tres ventanas. VentanaRegistroPedido arma dinámicamente sus campos según el Tipo de pedido elegido (Comida / Encomienda / Compra Express) usando CardLayout, y construye la subclase de Pedido correspondiente. VentanaListaPedidos muestra todos los pedidos registrados en una tabla que se puede refrescar en cualquier momento. VentanaAsignarRepartidor crea un Repartidor real, se lo asigna a un pedido (Despachable.setRepartidor()), cambia su estado a EN_REPARTO, y simula el viaje de entrega en un hilo aparte para no congelar la ventana; cuando termina, actualiza la interfaz de forma segura con SwingUtilities.invokeLater(). Todas las ventanas comparten los mismos datos a través de PedidoControlador, que a su vez lee y escribe la lista estática PedidoData.pedidos.
 
 ⚙️ Instrucciones para clonar y ejecutar el proyecto
 
@@ -78,8 +97,10 @@ Clona el repositorio desde GitHub.
 
 Abre el proyecto en IntelliJ IDEA.
 
-Ejecuta el archivo Main.java desde el paquete app.
+Para la demo de consola: ejecuta Main.java desde el paquete app.
 
-Sigue las instrucciones en consola.
+Para la interfaz gráfica: ejecuta Main.java desde el paquete main.
 
-Fecha de entrega: 14/09/2026
+Sigue las instrucciones en pantalla (o en consola, según el punto de entrada elegido).
+
+Fecha de entrega: 21/09/2026

@@ -70,8 +70,10 @@ public class ServicioComida extends Pedido implements Mostrable, Despachable, Ca
         System.out.println(":::::::::::::::::::::::::::::::::::::\n");
     }
 
+    @Override
+    public void setRepartidor(Repartidor repartidor) {
 
-
+    }
 
 
     @Override

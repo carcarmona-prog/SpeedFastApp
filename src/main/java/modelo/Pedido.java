@@ -44,7 +44,7 @@ public abstract class Pedido implements  Mostrable, Cancelable, Rastreable {
 
     }
 
-    public String getEstado(EstadoPedido enPreparacion) {
+    public String getEstado() {
         return estado;
     }
 

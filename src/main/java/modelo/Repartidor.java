@@ -56,7 +56,25 @@ public class Repartidor implements Mostrable, Runnable {
         return disponibilidadInmediata;
     }
 
+    public void setNombreRepartidor(String nombreRepartidor) {
+        this.nombreRepartidor = nombreRepartidor;
+    }
 
+    public void setDisponibilidadInmediata(boolean disponibilidadInmediata) {
+        this.disponibilidadInmediata = disponibilidadInmediata;
+    }
+
+    public void setMochilaTermica(boolean mochilaTermica) {
+        this.mochilaTermica = mochilaTermica;
+    }
+
+    public void setTipoVehiculoRepartidor(String tipoVehiculoRepartidor) {
+        this.tipoVehiculoRepartidor = tipoVehiculoRepartidor;
+    }
+
+    public void setZonaDeCarga(ZonaDeCarga zonaDeCarga) {
+        this.zonaDeCarga = zonaDeCarga;
+    }
 
     @Override
     public String toString() {

@@ -8,7 +8,7 @@ import interfaces.Despachable;
  * Extiende atributos de Pedido, e implementa interfaces para el cumplimiento de las funciones requeridas.
  */
 
-public class ServicioComprasExpress extends Pedido implements Despachable, Mostrable {
+public abstract class ServicioComprasExpress extends Pedido implements Despachable, Mostrable {
 
 
 

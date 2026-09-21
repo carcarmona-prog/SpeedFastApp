@@ -32,7 +32,12 @@ public class Main {
                 new Repartidor("ana diaz", false, "bicicleta", false));
 
         Pedido pedido3 = new ServicioComprasExpress(45, "Raúl Giménez", "pasaje 2, 1233", 7.0, "farmacia", 1.5, true,
-                new Repartidor("Rubén luz", false, "furgon", true));
+                new Repartidor("Rubén luz", false, "furgon", true)) {
+            @Override
+            public void setRepartidor(Repartidor repartidor) {
+
+            }
+        };
 
 
         pedidos.add(pedido1);

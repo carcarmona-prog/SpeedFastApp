@@ -66,6 +66,11 @@ public class ServicioEncomiendas extends Pedido implements Despachable, Mostrabl
         System.out.println(":::::::::::::::::::::::::::::::::::::\n");
     }
 
+    @Override
+    public void setRepartidor(Repartidor repartidor) {
+
+    }
+
 
     @Override
     public void cancelarPedido() {
