@@ -7,8 +7,8 @@ import java.util.ArrayList;
 
 /**
  * Controlador que centraliza el acceso a PedidoData.pedidos. Las ventanas
- * (vista) nunca tocan PedidoData directamente: siempre pasan por aquí, igual
- * que UsuarioControlador hace con UsuarioData. Esto separa la lógica de la
+ * (vista) nunca tocan PedidoData directamente.
+ * Esto separa la lógica de la
  * interfaz gráfica de dónde/cómo se guardan los datos.
  */
 public class PedidoControlador {

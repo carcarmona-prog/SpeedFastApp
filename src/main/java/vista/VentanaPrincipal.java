@@ -14,7 +14,7 @@ import java.awt.*;
 public class VentanaPrincipal extends JFrame {
 
     public VentanaPrincipal() {
-        setTitle("SpeedFastApp - Gestión de Entregas");
+        setTitle("SpeedFastApp - Gestor de Entregas");
         setSize(420, 260);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);

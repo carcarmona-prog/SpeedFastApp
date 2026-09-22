@@ -70,7 +70,7 @@ public class VentanaAsignarRepartidor extends JFrame {
         chkMochila = new JCheckBox();
         add(chkMochila);
 
-        JButton btnAsignar = new JButton("Asignar y iniciar entrega");
+        JButton btnAsignar = new JButton("Asignar e iniciar entrega");
         btnAsignar.addActionListener(e -> asignarYSimularEntrega());
         add(btnAsignar);
 
@@ -103,7 +103,7 @@ public class VentanaAsignarRepartidor extends JFrame {
         }
 
         pedido.setEstadoPedido(EstadoPedido.EN_REPARTO);
-        lblEstado.setText("Pedido #" + pedido.getIdPedido() + ": EN_REPARTO");
+        lblEstado.setText("Pedido #" + pedido.getIdPedido() + ": EN REPARTO");
         JOptionPane.showMessageDialog(this,
                 "Repartidor " + nombre + " asignado. Entrega del pedido #" + pedido.getIdPedido() + " iniciada.");
 

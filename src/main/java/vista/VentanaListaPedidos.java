@@ -33,7 +33,7 @@ public class VentanaListaPedidos extends JFrame {
         setLayout(new BorderLayout(10, 10));
 
         String[] columnas = {"ID", "Cliente", "Dirección", "Tipo", "Estado"};
-        modeloTabla = new DefaultTableModel(columnas, 0) {
+        modeloTabla = new DefaultTableModel(columnas, 0) { //comienza en 0 para evitar repeticiones de ids
             @Override
             public boolean isCellEditable(int row, int column) {
                 // La tabla es solo de lectura: los datos se editan desde

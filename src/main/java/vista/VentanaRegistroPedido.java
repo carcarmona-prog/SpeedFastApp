@@ -11,15 +11,10 @@ import javax.swing.*;
 import java.awt.*;
 
 /**
- * Formulario de registro de pedidos (Paso 2).
- *
- * El enunciado pide 3 campos (ID, Dirección, Tipo), pero los constructores
- * reales de ServicioComida / ServicioComprasExpress / ServicioEncomiendas
- * (de semanas anteriores) exigen más datos que eso (cliente, distancia, y
- * algunos campos propios de cada tipo). Por eso el formulario se separa en:
- *   - Datos comunes: ID, Cliente, Dirección, Distancia y Tipo.
- *   - Un panel de datos específicos que cambia según el Tipo elegido
- *     (CardLayout), con valores por defecto razonables si se dejan en blanco.
+ * Formulario de registro de pedidos.
+ *  - Datos comunes: ID, Cliente, Dirección, Distancia y Tipo.
+ *  - Un panel de datos específicos que cambia según el Tipo elegido
+ *    (CardLayout), con valores por defecto razonables si se dejan en blanco.
  */
 public class VentanaRegistroPedido extends JFrame {
 
@@ -131,7 +126,7 @@ public class VentanaRegistroPedido extends JFrame {
     }
 
     /**
-     * Valida los campos, construye el Pedido concreto según el Tipo elegido
+     * Válida los campos, construye el Pedido concreto según el Tipo elegido
      * y lo agrega a la lista compartida a través del controlador.
      */
     private void guardarPedido() {
@@ -176,7 +171,7 @@ public class VentanaRegistroPedido extends JFrame {
                 case "Encomienda" -> {
                     double peso = parseDoubleODefecto(txtPeso.getText(), 1.0);
                     String embalaje = txtEmbalaje.getText().trim();
-                    if (embalaje.isBlank()) embalaje = "Caja";
+                    if (embalaje.isBlank()) embalaje = "Bolsa";
                     yield new ServicioEncomiendas(id, cliente, direccion, distancia, "Pedido de encomienda",
                             distancia * 1.5, true, peso, embalaje, sinAsignar);
                 }
