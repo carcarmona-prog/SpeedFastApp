@@ -23,20 +23,7 @@ public class ConexionBD {
     }
 
     private static void inicializarTabla() {
-        String sqlFuncionarios = """
-                CREATE TABLE IF NOT EXISTS funcionarios (
-                    rut VARCHAR(12) PRIMARY KEY,
-                    nombre VARCHAR(50),
-                    apellido_paterno VARCHAR(50),
-                    apellido_materno VARCHAR(50),
-                    direccion VARCHAR(100),
-                    comuna VARCHAR(50),
-                    region VARCHAR(50),
-                    email VARCHAR(80),
-                    telefono VARCHAR(20)
-                )
-                """
-                ;
+
         String sqlUsuarios =
                 """
                 CREATE TABLE IF NOT EXISTS usuarios (
@@ -88,7 +75,6 @@ public class ConexionBD {
              Statement statement = conexion.createStatement();
         ){
 
-            statement.execute(sqlFuncionarios);
             statement.execute(sqlUsuarios);
             statement.execute(sqlUsuarioAdmin);
 

@@ -1,6 +1,7 @@
 package vista;
 
 import controlador.PedidoControlador;
+import dao.DaoException;
 import modelo.Pedido;
 import modelo.Repartidor;
 import modelo.ServicioComida;
@@ -12,13 +13,13 @@ import java.awt.*;
 
 /**
  * Formulario de registro de pedidos.
- *  - Datos comunes: ID, Cliente, Dirección, Distancia y Tipo.
+ *  - Datos comunes: Cliente, Dirección, Distancia y Tipo (el ID lo genera la
+ *    base de datos al guardar el pedido).
  *  - Un panel de datos específicos que cambia según el Tipo elegido
  *    (CardLayout), con valores por defecto razonables si se dejan en blanco.
  */
 public class VentanaRegistroPedido extends JFrame {
 
-    private JTextField txtId;
     private JTextField txtCliente;
     private JTextField txtDireccion;
     private JTextField txtDistancia;
@@ -40,7 +41,7 @@ public class VentanaRegistroPedido extends JFrame {
 
     public VentanaRegistroPedido() {
         setTitle("Registrar Pedido");
-        setSize(430, 420);
+        setSize(430, 390);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         crearComponentes();
@@ -51,10 +52,6 @@ public class VentanaRegistroPedido extends JFrame {
 
         JPanel panelDatosComunes = new JPanel(new GridLayout(0, 2, 8, 8));
         panelDatosComunes.setBorder(BorderFactory.createEmptyBorder(15, 15, 5, 15));
-
-        panelDatosComunes.add(new JLabel("ID:"));
-        txtId = new JTextField();
-        panelDatosComunes.add(txtId);
 
         panelDatosComunes.add(new JLabel("Cliente:"));
         txtCliente = new JTextField();
@@ -131,14 +128,6 @@ public class VentanaRegistroPedido extends JFrame {
      */
     private void guardarPedido() {
         try {
-            int id = Integer.parseInt(txtId.getText().trim());
-            if (id <= 0) {
-                throw new IllegalArgumentException("El ID debe ser un número mayor que 0.");
-            }
-            if (controlador.existeId(id)) {
-                throw new IllegalArgumentException("Ya existe un pedido registrado con el ID " + id + ".");
-            }
-
             String cliente = txtCliente.getText().trim();
             if (cliente.isBlank()) {
                 throw new IllegalArgumentException("El cliente no puede estar vacío.");
@@ -165,17 +154,17 @@ public class VentanaRegistroPedido extends JFrame {
                 case "Comida" -> {
                     String restaurante = txtRestaurante.getText().trim();
                     if (restaurante.isBlank()) restaurante = "Restaurante sin especificar";
-                    yield new ServicioComida(id, cliente, direccion, distancia, "Pedido de comida",
+                    yield new ServicioComida(0, cliente, direccion, distancia, "Pedido de comida",
                             distancia * 2, true, restaurante, chkMochila.isSelected(), sinAsignar);
                 }
                 case "Encomienda" -> {
                     double peso = parseDoubleODefecto(txtPeso.getText(), 1.0);
                     String embalaje = txtEmbalaje.getText().trim();
                     if (embalaje.isBlank()) embalaje = "Bolsa";
-                    yield new ServicioEncomiendas(id, cliente, direccion, distancia, "Pedido de encomienda",
+                    yield new ServicioEncomiendas(0, cliente, direccion, distancia, "Pedido de encomienda",
                             distancia * 1.5, true, peso, embalaje, sinAsignar);
                 }
-                default -> new ServicioComprasExpress(id, cliente, direccion, distancia,
+                default -> new ServicioComprasExpress(0, cliente, direccion, distancia,
                         "Compra express", distancia, true, sinAsignar) {
                     @Override
                     public void setRepartidor(Repartidor repartidor) {
@@ -184,16 +173,20 @@ public class VentanaRegistroPedido extends JFrame {
                 };
             };
 
-            controlador.registrarPedido(nuevoPedido);
-            JOptionPane.showMessageDialog(this, "Pedido #" + id + " registrado correctamente.");
+            // Se guarda en la base de datos; ella genera el ID del pedido.
+            int idGenerado = controlador.registrarPedido(nuevoPedido);
+            JOptionPane.showMessageDialog(this, "Pedido #" + idGenerado + " registrado correctamente en la base de datos.");
             limpiarFormulario();
 
         } catch (NumberFormatException ex) {
-            JOptionPane.showMessageDialog(this, "El ID y la distancia deben ser numéricos.",
+            JOptionPane.showMessageDialog(this, "La distancia debe ser numérica.",
                     "Error de validación", JOptionPane.ERROR_MESSAGE);
         } catch (IllegalArgumentException ex) {
             JOptionPane.showMessageDialog(this, ex.getMessage(),
                     "Error de validación", JOptionPane.ERROR_MESSAGE);
+        } catch (DaoException ex) {
+            JOptionPane.showMessageDialog(this, ex.getMessage(),
+                    "Error de base de datos", JOptionPane.ERROR_MESSAGE);
         }
     }
 
@@ -206,7 +199,6 @@ public class VentanaRegistroPedido extends JFrame {
     }
 
     private void limpiarFormulario() {
-        txtId.setText("");
         txtCliente.setText("");
         txtDireccion.setText("");
         txtDistancia.setText("");

@@ -1,20 +1,22 @@
 package vista;
 
 import controlador.PedidoControlador;
-import interfaces.Despachable;
-import modelo.EstadoPedido;
-import modelo.Pedido;
+import controlador.RepartidorControlador;
+import dao.DaoException;
+import modelo.PedidoRegistro;
 import modelo.Repartidor;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Ventana de asignación de repartidor / inicio de entrega (tercer botón del
- * Paso 1). Permite elegir un pedido ya registrado, crear un Repartidor con
- * los datos ingresados, asignárselo (Despachable.setRepartidor +
- * asignarRepartidor()) y simular el viaje de entrega.
+ * Ventana de asignación de repartidor / inicio de entrega (cuarto botón del
+ * menú principal). Permite elegir un pedido PENDIENTE y un repartidor, ambos
+ * leídos de la base de datos; al asignar se registra la entrega
+ * (tabla entrega), el pedido pasa a EN_REPARTO y se simula el viaje hasta
+ * dejarlo ENTREGADO, también en la base de datos.
  *
  * Nota de concurrencia: la simulación de la entrega (Thread.sleep) se hace
  * en un hilo aparte, NO en este método (que corre en el Event Dispatch
@@ -26,49 +28,35 @@ import java.util.List;
 public class VentanaAsignarRepartidor extends JFrame {
 
     private JComboBox<String> cmbPedidos;
-    private JTextField txtNombreRepartidor;
-    private JComboBox<String> cmbVehiculo;
-    private JCheckBox chkMochila;
+    private JComboBox<String> cmbRepartidores;
     private JLabel lblEstado;
 
-    private final PedidoControlador controlador = new PedidoControlador();
-    private List<Pedido> pedidosDisponibles;
+    private final PedidoControlador pedidoControlador = new PedidoControlador();
+    private final RepartidorControlador repartidorControlador = new RepartidorControlador();
+
+    private List<PedidoRegistro> pedidosPendientes = new ArrayList<>();
+    private List<Repartidor> repartidores = new ArrayList<>();
 
     public VentanaAsignarRepartidor() {
         setTitle("Asignar repartidor / Iniciar entrega");
-        setSize(430, 300);
+        setSize(460, 220);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         crearComponentes();
+        cargarDatos();
     }
 
     private void crearComponentes() {
         setLayout(new GridLayout(0, 2, 8, 8));
         ((JPanel) getContentPane()).setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
 
-        pedidosDisponibles = controlador.listarPedidos();
-
-        add(new JLabel("Pedido:"));
+        add(new JLabel("Pedido pendiente:"));
         cmbPedidos = new JComboBox<>();
-        // Se arma una etiqueta legible por pedido en vez de depender de
-        // toString() (algunas clases de Pedido lo usan para imprimir por
-        // consola, no para representarlo como texto corto).
-        for (Pedido p : pedidosDisponibles) {
-            cmbPedidos.addItem("#" + p.getIdPedido() + " - " + p.getNombreCliente() + " (" + p.getDireccionDeEntrega() + ")");
-        }
         add(cmbPedidos);
 
-        add(new JLabel("Nombre del repartidor:"));
-        txtNombreRepartidor = new JTextField();
-        add(txtNombreRepartidor);
-
-        add(new JLabel("Tipo de vehículo:"));
-        cmbVehiculo = new JComboBox<>(new String[]{"Moto", "Bicicleta", "Auto", "Furgón"});
-        add(cmbVehiculo);
-
-        add(new JLabel("¿Mochila térmica?"));
-        chkMochila = new JCheckBox();
-        add(chkMochila);
+        add(new JLabel("Repartidor:"));
+        cmbRepartidores = new JComboBox<>();
+        add(cmbRepartidores);
 
         JButton btnAsignar = new JButton("Asignar e iniciar entrega");
         btnAsignar.addActionListener(e -> asignarYSimularEntrega());
@@ -78,39 +66,69 @@ public class VentanaAsignarRepartidor extends JFrame {
         add(lblEstado);
     }
 
-    private void asignarYSimularEntrega() {
-        int indice = cmbPedidos.getSelectedIndex();
-        if (indice < 0 || pedidosDisponibles.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "No hay pedidos registrados para asignar.");
+    /**
+     * Lee de la base de datos los pedidos pendientes y los repartidores, y
+     * llena los combos. Se arma una etiqueta legible por elemento en vez de
+     * depender de toString().
+     */
+    private void cargarDatos() {
+        try {
+            pedidosPendientes = new ArrayList<>(pedidoControlador.listarPendientes());
+            repartidores = new ArrayList<>(repartidorControlador.listarRepartidores());
+        } catch (DaoException ex) {
+            JOptionPane.showMessageDialog(this, ex.getMessage(),
+                    "Error de base de datos", JOptionPane.ERROR_MESSAGE);
             return;
         }
 
-        String nombre = txtNombreRepartidor.getText().trim();
-        if (nombre.isBlank()) {
-            JOptionPane.showMessageDialog(this, "Ingrese el nombre del repartidor.",
-                    "Error de validación", JOptionPane.ERROR_MESSAGE);
-            return;
+        for (PedidoRegistro p : pedidosPendientes) {
+            cmbPedidos.addItem("#" + p.id() + " - " + p.tipo() + " (" + p.direccion() + ")");
         }
-
-        Pedido pedido = pedidosDisponibles.get(indice);
-        Repartidor repartidor = new Repartidor(nombre, true, (String) cmbVehiculo.getSelectedItem(), chkMochila.isSelected());
-
-        // Solo los pedidos "Despachables" (Comida, Encomienda, Compra
-        // Express) saben asignar un repartidor y mostrar su información.
-        if (pedido instanceof Despachable despachable) {
-            despachable.setRepartidor(repartidor);
-            despachable.asignarRepartidor(); // imprime en consola los datos del repartidor asignado
+        for (Repartidor r : repartidores) {
+            cmbRepartidores.addItem("#" + r.getId() + " - " + r.getNombreRepartidor());
         }
-
-        pedido.setEstadoPedido(EstadoPedido.EN_REPARTO);
-        lblEstado.setText("Pedido #" + pedido.getIdPedido() + ": EN REPARTO");
-        JOptionPane.showMessageDialog(this,
-                "Repartidor " + nombre + " asignado. Entrega del pedido #" + pedido.getIdPedido() + " iniciada.");
-
-        iniciarSimulacionDeEntrega(pedido);
     }
 
-    private void iniciarSimulacionDeEntrega(Pedido pedido) {
+    private void asignarYSimularEntrega() {
+        int indicePedido = cmbPedidos.getSelectedIndex();
+        int indiceRepartidor = cmbRepartidores.getSelectedIndex();
+
+        if (indicePedido < 0) {
+            JOptionPane.showMessageDialog(this, "No hay pedidos pendientes para asignar.");
+            return;
+        }
+        if (indiceRepartidor < 0) {
+            JOptionPane.showMessageDialog(this,
+                    "No hay repartidores registrados. Regístrelos desde \"Registrar repartidor\".");
+            return;
+        }
+
+        PedidoRegistro pedido = pedidosPendientes.get(indicePedido);
+        Repartidor repartidor = repartidores.get(indiceRepartidor);
+
+        try {
+            // Guarda la entrega y deja el pedido EN_REPARTO en la base de datos
+            pedidoControlador.iniciarEntrega(pedido.id(), repartidor.getId());
+        } catch (DaoException ex) {
+            JOptionPane.showMessageDialog(this, ex.getMessage(),
+                    "Error de base de datos", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        // El pedido ya no está pendiente: se quita de la lista para no
+        // poder asignarlo dos veces.
+        pedidosPendientes.remove(indicePedido);
+        cmbPedidos.removeItemAt(indicePedido);
+
+        lblEstado.setText("Pedido #" + pedido.id() + ": EN REPARTO");
+        JOptionPane.showMessageDialog(this,
+                "Repartidor " + repartidor.getNombreRepartidor() + " asignado. Entrega del pedido #"
+                        + pedido.id() + " iniciada.");
+
+        iniciarSimulacionDeEntrega(pedido.id());
+    }
+
+    private void iniciarSimulacionDeEntrega(int idPedido) {
         Thread hiloEntrega = new Thread(() -> {
             try {
                 Thread.sleep(4000); // simula el tiempo de viaje del repartidor
@@ -118,15 +136,23 @@ public class VentanaAsignarRepartidor extends JFrame {
                 Thread.currentThread().interrupt();
                 return;
             }
-            pedido.setEstadoPedido(EstadoPedido.ENTREGADO);
+
+            String resultado;
+            try {
+                pedidoControlador.marcarEntregado(idPedido);
+                resultado = "Pedido #" + idPedido + ": ENTREGADO";
+            } catch (DaoException ex) {
+                resultado = "Pedido #" + idPedido + ": error al marcar como entregado";
+            }
 
             // Los componentes Swing solo deben modificarse desde el Event
             // Dispatch Thread: por eso el resultado se aplica con
             // invokeLater() en vez de tocar lblEstado directamente aquí.
-            SwingUtilities.invokeLater(() ->
-                    lblEstado.setText("Pedido #" + pedido.getIdPedido() + ": ENTREGADO"));
-        }, "hilo-entrega-" + pedido.getIdPedido());
+            String textoFinal = resultado;
+            SwingUtilities.invokeLater(() -> lblEstado.setText(textoFinal));
+        }, "hilo-entrega-" + idPedido);
 
         hiloEntrega.start();
     }
 }
+
