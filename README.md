@@ -64,9 +64,10 @@ Estructura del programa:
 ```
 ├── pom.xml                       # Dependencia: mysql-connector-j
 ├── README.md
-├── sql/
-│   └── speedfast_db.sql          # Script DDL que crea la base de datos y sus tablas
-└── src/main/java/
+└── src/main/
+    ├── java/                       # Código fuente (detalle más abajo)
+    └── resources/
+        └── baseDeDatosSpeedFastApp.sql        # Script DDL que crea la base de datos y sus tablas
 ```
 
 📁 src/main/java/
@@ -145,7 +146,7 @@ Al iniciar, LoginView pide el correo y la contraseña y los valida contra la tab
 
 3. Ten un servidor MySQL en ejecución en localhost:3306. En conexion/ConexionBD.java revisa que las constantes USER y PASSWORD correspondan a tu usuario de MySQL.
 
-4. Crea la base de datos: puedes ejecutar el script sql/speedfast_db.sql en MySQL Workbench o DBeaver, o dejar que ConexionBD cree la base de datos y las tablas automáticamente la primera vez que se conecta.
+4. Crea la base de datos: puedes ejecutar el script src/main/resources/speedfast_db.sql en MySQL Workbench o DBeaver, o dejar que ConexionBD cree la base de datos y las tablas automáticamente la primera vez que se conecta.
 
 5. Verifica la conexión ejecutando ProbarConexion.java desde el paquete conexion: debe imprimir "Conectado a: speedfast_db".
 
