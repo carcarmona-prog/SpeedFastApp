@@ -11,6 +11,9 @@ import gestores.ZonaDeCarga;
 public class Repartidor implements Mostrable, Runnable {
 
 
+    // Id que asigna la base de datos (tabla repartidor); 0 si aún no se guarda.
+    private int id;
+
     protected String nombreRepartidor;
     protected boolean disponibilidadInmediata;
     protected boolean mochilaTermica;
@@ -38,6 +41,14 @@ public class Repartidor implements Mostrable, Runnable {
     public Repartidor(String nombreRepartidor, ZonaDeCarga zonaDeCarga) {
         this.nombreRepartidor = nombreRepartidor;
         this.zonaDeCarga = zonaDeCarga;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
     }
 
     public String getNombreRepartidor() {

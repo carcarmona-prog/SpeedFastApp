@@ -1,5 +1,6 @@
 package app;
 
+import vista.LoginView;
 import vista.VentanaPrincipal;
 
 import javax.swing.*;
@@ -15,6 +16,6 @@ public class MainSwing {
     public static void main(String[] args) {
         // Toda la creación/manipulación de componentes Swing debe ocurrir
         // en el Event Dispatch Thread; invokeLater() la encola ahí.
-        SwingUtilities.invokeLater(() -> new VentanaPrincipal().setVisible(true));
+        SwingUtilities.invokeLater(() ->  new LoginView(() -> new VentanaPrincipal().setVisible(true)).setVisible(true));
     }
 }

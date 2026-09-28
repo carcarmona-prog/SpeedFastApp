@@ -1,50 +1,50 @@
 package controlador;
 
-import data.PedidoData;
+import dao.EntregaDAO;
+import dao.PedidoDAO;
+import modelo.Entrega;
+import modelo.EstadoPedido;
 import modelo.Pedido;
+import modelo.PedidoRegistro;
 
-import java.util.ArrayList;
+import java.util.List;
 
 /**
- * Controlador que centraliza el acceso a PedidoData.pedidos. Las ventanas
- * (vista) nunca tocan PedidoData directamente.
- * Esto separa la lógica de la
- * interfaz gráfica de dónde/cómo se guardan los datos.
+ * Controlador que centraliza el acceso a los pedidos y a sus entregas. Las
+ * ventanas (vista) nunca tocan los DAO directamente: esto separa la lógica
+ * de la interfaz gráfica de dónde/cómo se guardan los datos (ahora en la
+ * base de datos MySQL, antes en la lista en memoria PedidoData).
  */
 public class PedidoControlador {
 
-    /**
-     * Devuelve la lista completa de pedidos registrados.
-     */
-    public ArrayList<Pedido> listarPedidos() {
-        return PedidoData.pedidos;
+    private final PedidoDAO pedidoDAO = new PedidoDAO();
+    private final EntregaDAO entregaDAO = new EntregaDAO();
+
+    /** Guarda el pedido en la base de datos y devuelve el id que se le asignó. */
+    public int registrarPedido(Pedido pedido) {
+        return pedidoDAO.guardar(pedido);
+    }
+
+    /** Devuelve todos los pedidos guardados en la base de datos. */
+    public List<PedidoRegistro> listarPedidos() {
+        return pedidoDAO.listarTodos();
+    }
+
+    /** Devuelve solo los pedidos que todavía no tienen repartidor asignado. */
+    public List<PedidoRegistro> listarPendientes() {
+        return pedidoDAO.listarPorEstado(EstadoPedido.PENDIENTE.name());
     }
 
     /**
-     * Agrega un pedido ya construido (ServicioComida, ServicioComprasExpress
-     * o ServicioEncomiendas) a la lista compartida.
+     * Registra la entrega (pedido + repartidor) y deja el pedido EN_REPARTO.
      */
-    public void registrarPedido(Pedido pedido) {
-        PedidoData.pedidos.add(pedido);
+    public void iniciarEntrega(int idPedido, int idRepartidor) {
+        entregaDAO.guardar(new Entrega(idPedido, idRepartidor));
+        pedidoDAO.actualizarEstado(idPedido, EstadoPedido.EN_REPARTO.name());
     }
 
-    /**
-     * Busca un pedido por su ID. Devuelve null si no existe.
-     */
-    public Pedido buscarPorId(int id) {
-        for (Pedido pedido : PedidoData.pedidos) {
-            if (pedido.getIdPedido() == id) {
-                return pedido;
-            }
-        }
-        return null;
-    }
-
-    /**
-     * Indica si ya existe un pedido con ese ID, para validar el formulario
-     * de registro antes de guardar (no permitir IDs repetidos).
-     */
-    public boolean existeId(int id) {
-        return buscarPorId(id) != null;
+    /** Marca el pedido como ENTREGADO en la base de datos. */
+    public void marcarEntregado(int idPedido) {
+        pedidoDAO.actualizarEstado(idPedido, EstadoPedido.ENTREGADO.name());
     }
 }
