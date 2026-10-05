@@ -26,7 +26,9 @@ Diseñamos un programa para la gestión de pedidos de la empresa SpeedFastApp, i
 
 *Actualización semana 6: Le agregamos una interfaz gráfica de escritorio al sistema, usando Java Swing. Ahora se pueden registrar pedidos, listarlos en una tabla y asignarles un repartidor para simular el inicio de la entrega, todo desde ventanas en vez de la consola. Separamos la lógica en capas (vista / controlador / data), reutilizando las clases del modelo (Pedido, Repartidor) que ya teníamos de semanas anteriores. Esta separación de responsabilidades demostró su valor esta misma semana: se eliminaron por completo las clases de login y gestión de usuarios (que no correspondían al enunciado) sin que el resto del programa se viera afectado.
 
-*Actualización semana 7: Conectamos la aplicación a una base de datos MySQL (speedfast_db) usando JDBC, de modo que los pedidos, repartidores y entregas se guardan y se consultan de forma persistente en vez de vivir en una lista en memoria. Se creó la clase ConexionBD (paquete conexion), que gestiona la conexión con DriverManager y crea la base de datos y sus tablas (pedido, repartidor, entrega, además de usuarios y funcionarios) si todavía no existen. Se implementó el patrón DAO con las clases PedidoDAO (guardar, listar, filtrar por estado y actualizar estado), RepartidorDAO (guardar y listarTodos) y EntregaDAO (guardar la relación entre un pedido y un repartidor), todas con PreparedStatement para evitar inyección SQL y con try-with-resources para cerrar siempre los recursos; los errores se informan con la excepción propia DaoException. La capa controlador pasó a hablar con los DAO (PedidoControlador y el nuevo RepartidorControlador), por lo que las ventanas siguieron sin conocer nada de SQL. En la interfaz, los formularios ahora registran pedidos y repartidores directamente en la base de datos (el ID de cada pedido lo genera MySQL con AUTO_INCREMENT), se agregó una ventana para registrar repartidores, el listado de pedidos se llena con una JTable desde la base y la asignación de repartidor registra la entrega y actualiza el estado del pedido (PENDIENTE → EN_REPARTO → ENTREGADO) en la base de datos. Además se incorporó una ventana de inicio de sesión (LoginView) que valida el correo y la contraseña contra la tabla usuarios antes de abrir la ventana principal.
+*Actualización semana 7: Conectamos la aplicación a una base de datos MySQL (speedfast_db) usando JDBC, de modo que los pedidos, repartidores y entregas se guardan y se consultan de forma persistente en vez de vivir en una lista en memoria. Se creó la clase ConexionBD (paquete conexion), que gestiona la conexión con DriverManager y crea la base de datos y sus tablas (pedido, repartidor, entrega, además de usuarios y funcionarios) si todavía no existen. Se implementó el patrón DAO con las clases PedidoDAO, RepartidorDAO y EntregaDAO, todas con PreparedStatement para evitar inyección SQL y con try-with-resources para cerrar siempre los recursos; los errores se informan con la excepción propia DaoException. La capa controlador pasó a hablar con los DAO (PedidoControlador y el nuevo RepartidorControlador), por lo que las ventanas siguieron sin conocer nada de SQL. En la interfaz, los formularios registran pedidos y repartidores directamente en la base de datos (el ID de cada pedido lo genera MySQL con AUTO_INCREMENT), se agregó una ventana para registrar repartidores, el listado de pedidos se llena con una JTable desde la base y la asignación de repartidor registra la entrega y actualiza el estado del pedido (PENDIENTE → EN_REPARTO → ENTREGADO) en la base de datos. Además se incorporó una ventana de inicio de sesión (LoginView) que valida el correo y la contraseña contra la tabla usuarios antes de abrir la ventana principal.
+
+*Actualización semana 8: Completamos el ciclo CRUD (crear, leer, actualizar y eliminar) sobre las tres entidades persistentes del sistema. Se definió la interfaz genérica CrudDAO&lt;T, ID&gt;, con los métodos create(), readAll(), update() y delete(), que ahora implementan PedidoDAO, RepartidorDAO y EntregaDAO; cada uno suma además sus propios métodos de consulta (PedidoDAO.filtrar(estado, tipo), EntregaDAO.listarPorPedido/listarPorRepartidor). Se creó el controlador EntregaControlador para el CRUD manual de entregas. En la interfaz: VentanaListaPedidos ahora permite filtrar los pedidos por tipo y/o estado, y editar o eliminar el seleccionado; VentanaRegistroRepartidor permite seleccionar un repartidor de la tabla para editarlo o eliminarlo; se agregó la ventana VentanaGestionEntregas, que registra, lista, edita y elimina entregas asociando un Pedido y un Repartidor mediante JComboBox (que muestran un texto legible pero conservan el id real), con fecha y hora editables. Se reforzaron las validaciones de entrada y el manejo de errores: por ejemplo, intentar eliminar un pedido o un repartidor con una entrega asociada ahora muestra un mensaje claro en vez de un error de SQL. VentanaAsignarRepartidor, de la semana 5, se mantuvo sin cambios: sigue siendo el flujo de negocio que simula el viaje de entrega con un hilo aparte, distinto del CRUD manual de entregas.
 
 1- Encapsulamiento de clases.
 
@@ -58,6 +60,12 @@ Diseñamos un programa para la gestión de pedidos de la empresa SpeedFastApp, i
 
 15- Autenticación de usuarios contra la base de datos (LoginView).
 
+16- Interfaz genérica con tipos parametrizados (CrudDAO&lt;T, ID&gt;).
+
+17- CRUD completo (create, readAll, update, delete) sobre pedidos, repartidores y entregas.
+
+18- Validación de entradas y retroalimentación de errores en la GUI (campos obligatorios, formato de fecha/hora, restricciones de llave foránea).
+
 Estructura del programa:
 
 📁 raíz del proyecto
@@ -67,7 +75,7 @@ Estructura del programa:
 └── src/main/
     ├── java/                       # Código fuente (detalle más abajo)
     └── resources/
-        └── baseDeDatosSpeedFastApp.sql        # Script DDL que crea la base de datos y sus tablas
+        └── speedfast_db.sql        # Script DDL que crea la base de datos y sus tablas
 ```
 
 📁 src/main/java/
@@ -103,9 +111,10 @@ Estructura del programa:
 │   └── ZonaDeCarga.java            # Recurso compartido (synchronized) entre repartidores
 
 ├── dao/                          # Acceso a la base de datos (JDBC)
-│   ├── PedidoDAO.java              # guardar(Pedido), listarTodos(), listarPorEstado(), actualizarEstado()
-│   ├── RepartidorDAO.java          # guardar(Repartidor), listarTodos()
-│   ├── EntregaDAO.java             # guardar(Entrega)
+│   ├── CrudDAO.java                # Interfaz genérica: create(), readAll(), update(), delete()
+│   ├── PedidoDAO.java               implements CrudDAO<PedidoRegistro, Integer>; además filtrar(estado, tipo), actualizarEstado()
+│   ├── RepartidorDAO.java           implements CrudDAO<Repartidor, Integer>
+│   ├── EntregaDAO.java              implements CrudDAO<Entrega, Integer>; además listarPorPedido(), listarPorRepartidor()
 │   └── DaoException.java           # Error de acceso a datos (RuntimeException)
 
 ├── data/                         # Datos en memoria de la semana 6
@@ -113,15 +122,17 @@ Estructura del programa:
 
 ├── controlador/                  # Lógica entre la vista y los DAO
 │   ├── PedidoControlador.java
-│   └── RepartidorControlador.java
+│   ├── RepartidorControlador.java
+│   └── EntregaControlador.java     # CRUD manual de entregas (lo usa VentanaGestionEntregas)
 
 └── vista/                        # Interfaz gráfica (Swing)
     ├── LoginView.java              # Inicio de sesión (correo y contraseña de la tabla usuarios)
-    ├── VentanaPrincipal.java       # Ventana principal: 4 botones de navegación
+    ├── VentanaPrincipal.java       # Ventana principal: 5 botones de navegación
     ├── VentanaRegistroPedido.java  # Formulario de registro (Cliente, Dirección, Tipo, ...)
-    ├── VentanaRegistroRepartidor.java # Formulario de repartidores + tabla de repartidores
-    ├── VentanaListaPedidos.java    # Tabla de pedidos guardados (JTable + DefaultTableModel)
-    └── VentanaAsignarRepartidor.java # Asigna repartidor, registra la entrega y simula el viaje en un hilo aparte
+    ├── VentanaRegistroRepartidor.java # Registrar, editar y eliminar repartidores (tabla seleccionable)
+    ├── VentanaListaPedidos.java    # Listado de pedidos con filtros por tipo/estado, editar y eliminar
+    ├── VentanaAsignarRepartidor.java # Flujo de negocio: asigna repartidor, registra la entrega y simula el viaje en un hilo aparte
+    └── VentanaGestionEntregas.java # CRUD manual de entregas: crear, listar, editar y eliminar (combos Pedido/Repartidor)
 ```
 
 🗄️ Sobre la base de datos (MySQL):
@@ -136,7 +147,7 @@ Solo se guardan las columnas anteriores: datos como el nombre del cliente o la d
 
 🖥️ Sobre la interfaz gráfica (Swing):
 
-Al iniciar, LoginView pide el correo y la contraseña y los valida contra la tabla usuarios de la base de datos; si son correctos, abre VentanaPrincipal, que es el punto de partida desde donde se abren las otras cuatro ventanas. VentanaRegistroPedido arma dinámicamente sus campos según el Tipo de pedido elegido (Comida / Encomienda / Compra Express) usando CardLayout, construye la subclase de Pedido correspondiente y la guarda en la base de datos, que le asigna el ID. VentanaRegistroRepartidor guarda nuevos repartidores y muestra en una tabla todos los que ya están registrados. VentanaListaPedidos muestra en una JTable los pedidos guardados en la base de datos, y se puede refrescar en cualquier momento. VentanaAsignarRepartidor permite elegir un pedido pendiente y un repartidor (ambos leídos de la base de datos), registra la entrega, cambia el estado del pedido a EN_REPARTO y simula el viaje de entrega en un hilo aparte para no congelar la ventana; cuando termina, deja el pedido como ENTREGADO en la base de datos y actualiza la interfaz de forma segura con SwingUtilities.invokeLater(). Todas las ventanas se comunican con la base de datos a través de los controladores (PedidoControlador y RepartidorControlador), que a su vez usan los DAO.
+Al iniciar, LoginView pide el correo y la contraseña y los valida contra la tabla usuarios de la base de datos; si son correctos, abre VentanaPrincipal, que es el punto de partida desde donde se abren las otras cinco ventanas. VentanaRegistroPedido arma dinámicamente sus campos según el Tipo de pedido elegido (Comida / Encomienda / Compra Express) usando CardLayout, construye la subclase de Pedido correspondiente y la guarda en la base de datos, que le asigna el ID. VentanaRegistroRepartidor guarda nuevos repartidores y muestra en una tabla todos los que ya están registrados; al seleccionar una fila, sus datos se cargan en el formulario para editarlos o eliminarlos. VentanaListaPedidos muestra en una JTable los pedidos guardados en la base de datos, se puede filtrar por tipo y/o estado, y el pedido seleccionado se puede editar (dirección, tipo, estado) o eliminar. VentanaAsignarRepartidor permite elegir un pedido pendiente y un repartidor (ambos leídos de la base de datos), registra la entrega, cambia el estado del pedido a EN_REPARTO y simula el viaje de entrega en un hilo aparte para no congelar la ventana; cuando termina, deja el pedido como ENTREGADO en la base de datos y actualiza la interfaz de forma segura con SwingUtilities.invokeLater(). VentanaGestionEntregas es el CRUD manual de entregas: con dos JComboBox (que muestran un texto legible pero guardan el id real de cada Pedido y Repartidor) y campos de fecha/hora, permite crear, listar, editar y eliminar entregas directamente, sin pasar por la simulación de VentanaAsignarRepartidor. Todas las ventanas se comunican con la base de datos a través de los controladores (PedidoControlador, RepartidorControlador y EntregaControlador), que a su vez usan los DAO.
 
 ⚙️ Instrucciones para clonar y ejecutar el proyecto
 
@@ -152,9 +163,8 @@ Al iniciar, LoginView pide el correo y la contraseña y los valida contra la tab
 
 6. Para la demo de consola: ejecuta Main.java desde el paquete app.
 
-7. Para la interfaz gráfica: ejecuta MainSwing.java desde el paquete app e inicia sesión con el usuario administrador (correo: admin@spf.cl, contraseña: admin123).
+7. Para la interfaz gráfica: ejecuta MainSwing.java desde el paquete app e inicia sesión con el usuario administrador (correo: admin@spf.cl, contraseña: admin123). Desde VentanaPrincipal puedes registrar pedidos y repartidores, listarlos con filtros, asignar repartidores (flujo de negocio) y gestionar entregas (CRUD manual).
 
 8. Sigue las instrucciones en pantalla (o en consola, según el punto de entrada elegido).
 
-
-Fecha de entrega: 28/09/2026
+Fecha de entrega: 05-10-2026

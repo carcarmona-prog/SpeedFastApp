@@ -15,11 +15,21 @@ public class RepartidorControlador {
 
     /** Guarda el repartidor en la base de datos y devuelve su id. */
     public int registrarRepartidor(Repartidor repartidor) {
-        return repartidorDAO.guardar(repartidor);
+        return repartidorDAO.create(repartidor);
     }
 
     /** Devuelve todos los repartidores registrados. */
     public List<Repartidor> listarRepartidores() {
-        return repartidorDAO.listarTodos();
+        return repartidorDAO.readAll();
+    }
+
+    /** Actualiza el nombre de un repartidor existente. */
+    public void actualizarRepartidor(Repartidor repartidor) {
+        repartidorDAO.update(repartidor);
+    }
+
+    /** Elimina un repartidor de la base de datos. */
+    public void eliminarRepartidor(int idRepartidor) {
+        repartidorDAO.delete(idRepartidor);
     }
 }

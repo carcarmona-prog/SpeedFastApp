@@ -1,41 +1,37 @@
 package dao;
 
 import conexion.ConexionBD;
-import modelo.Pedido;
 import modelo.PedidoRegistro;
-import modelo.ServicioComida;
-import modelo.ServicioComprasExpress;
-import modelo.ServicioEncomiendas;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLIntegrityConstraintViolationException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 
 /**
- * Acceso a la tabla "pedido". Todas las consultas usan PreparedStatement y
- * los recursos (Connection, PreparedStatement, ResultSet) se declaran en un
+ * Acceso a la tabla "pedido" (id, direccion, tipo, estado). Implementa el
+ * CRUD completo con PedidoRegistro, que son exactamente las columnas que
+ * la tabla guarda. Todas las consultas usan PreparedStatement y los
+ * recursos (Connection, PreparedStatement, ResultSet) se declaran en un
  * try-with-resources, que los cierra siempre, incluso si ocurre un error
  * (equivale al cierre que se haría en un bloque finally).
  */
-public class PedidoDAO {
+public class PedidoDAO implements CrudDAO<PedidoRegistro, Integer> {
 
-    /**
-     * Inserta el pedido y devuelve el id que generó la base de datos
-     * (la columna id es AUTO_INCREMENT).
-     */
-    public int guardar(Pedido pedido) {
+    /** Inserta el pedido y devuelve el id que generó la base de datos. */
+    @Override
+    public Integer create(PedidoRegistro pedido) {
         String sql = "INSERT INTO pedido (direccion, tipo, estado) VALUES (?, ?, ?)";
 
         try (Connection conexion = ConexionBD.obtenerConexion();
              PreparedStatement ps = conexion.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
-            ps.setString(1, pedido.getDireccionDeEntrega());
-            ps.setString(2, obtenerTipo(pedido));
-            ps.setString(3, pedido.getEstado().toUpperCase(Locale.ROOT));
+            ps.setString(1, pedido.direccion());
+            ps.setString(2, pedido.tipo());
+            ps.setString(3, pedido.estado());
             ps.executeUpdate();
 
             try (ResultSet claves = ps.getGeneratedKeys()) {
@@ -48,41 +44,93 @@ public class PedidoDAO {
     }
 
     /** Devuelve todos los pedidos guardados, del más antiguo al más nuevo. */
-    public List<PedidoRegistro> listarTodos() {
-        return consultar("SELECT id, direccion, tipo, estado FROM pedido ORDER BY id", null);
+    @Override
+    public List<PedidoRegistro> readAll() {
+        return filtrar(null, null);
+    }
+
+    /**
+     * Actualiza dirección, tipo y estado de un pedido ya existente
+     * (identificado por pedido.id()).
+     */
+    @Override
+    public void update(PedidoRegistro pedido) {
+        String sql = "UPDATE pedido SET direccion = ?, tipo = ?, estado = ? WHERE id = ?";
+
+        try (Connection conexion = ConexionBD.obtenerConexion();
+             PreparedStatement ps = conexion.prepareStatement(sql)) {
+
+            ps.setString(1, pedido.direccion());
+            ps.setString(2, pedido.tipo());
+            ps.setString(3, pedido.estado());
+            ps.setInt(4, pedido.id());
+
+            if (ps.executeUpdate() == 0) {
+                throw new DaoException("No existe un pedido con id " + pedido.id() + ".", null);
+            }
+
+        } catch (DaoException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new DaoException("No se pudo actualizar el pedido #" + pedido.id() + ": " + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Elimina el pedido indicado. Si tiene entregas asociadas, la base de
+     * datos rechaza el borrado por la clave foránea de "entrega"; en ese
+     * caso se informa un mensaje claro en vez del error crudo de SQL.
+     */
+    @Override
+    public void delete(Integer id) {
+        String sql = "DELETE FROM pedido WHERE id = ?";
+
+        try (Connection conexion = ConexionBD.obtenerConexion();
+             PreparedStatement ps = conexion.prepareStatement(sql)) {
+
+            ps.setInt(1, id);
+            ps.executeUpdate();
+
+        } catch (SQLIntegrityConstraintViolationException e) {
+            throw new DaoException("No se puede eliminar el pedido #" + id
+                    + " porque tiene una entrega registrada. Elimine primero esa entrega.", e);
+        } catch (Exception e) {
+            throw new DaoException("No se pudo eliminar el pedido #" + id + ": " + e.getMessage(), e);
+        }
     }
 
     /** Devuelve los pedidos que están en el estado indicado (ej.: PENDIENTE). */
     public List<PedidoRegistro> listarPorEstado(String estado) {
-        return consultar("SELECT id, direccion, tipo, estado FROM pedido WHERE estado = ? ORDER BY id", estado);
+        return filtrar(estado, null);
     }
 
-    /** Cambia el estado de un pedido (PENDIENTE, EN_REPARTO, ENTREGADO...). */
-    public void actualizarEstado(int idPedido, String nuevoEstado) {
-        String sql = "UPDATE pedido SET estado = ? WHERE id = ?";
+    /** Devuelve los pedidos del tipo indicado (COMIDA | ENCOMIENDA | EXPRESS). */
+    public List<PedidoRegistro> listarPorTipo(String tipo) {
+        return filtrar(null, tipo);
+    }
 
-        try (Connection conexion = ConexionBD.obtenerConexion();
-             PreparedStatement ps = conexion.prepareStatement(sql)) {
-
-            ps.setString(1, nuevoEstado);
-            ps.setInt(2, idPedido);
-            ps.executeUpdate();
-
-        } catch (Exception e) {
-            throw new DaoException("No se pudo actualizar el estado del pedido #" + idPedido + ": " + e.getMessage(), e);
+    /**
+     * Filtra por estado y/o tipo a la vez; cualquiera de los dos puede ser
+     * null, en cuyo caso no se filtra por ese campo. Si ambos son null,
+     * devuelve todos los pedidos (igual que readAll()).
+     */
+    public List<PedidoRegistro> filtrar(String estado, String tipo) {
+        StringBuilder sql = new StringBuilder("SELECT id, direccion, tipo, estado FROM pedido");
+        List<String> condiciones = new ArrayList<>();
+        if (estado != null) condiciones.add("estado = ?");
+        if (tipo != null) condiciones.add("tipo = ?");
+        if (!condiciones.isEmpty()) {
+            sql.append(" WHERE ").append(String.join(" AND ", condiciones));
         }
-    }
+        sql.append(" ORDER BY id");
 
-    // Consulta común de los dos listados. Si "estado" es null no se filtra.
-    private List<PedidoRegistro> consultar(String sql, String estado) {
         List<PedidoRegistro> pedidos = new ArrayList<>();
-
         try (Connection conexion = ConexionBD.obtenerConexion();
-             PreparedStatement ps = conexion.prepareStatement(sql)) {
+             PreparedStatement ps = conexion.prepareStatement(sql.toString())) {
 
-            if (estado != null) {
-                ps.setString(1, estado);
-            }
+            int indice = 1;
+            if (estado != null) ps.setString(indice++, estado);
+            if (tipo != null) ps.setString(indice, tipo);
 
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
@@ -100,11 +148,20 @@ public class PedidoDAO {
         }
     }
 
-    /** El tipo se deduce de la subclase real (COMIDA | ENCOMIENDA | EXPRESS). */
-    private String obtenerTipo(Pedido pedido) {
-        if (pedido instanceof ServicioComida) return "COMIDA";
-        if (pedido instanceof ServicioEncomiendas) return "ENCOMIENDA";
-        if (pedido instanceof ServicioComprasExpress) return "EXPRESS";
-        return "OTRO";
+    /** Cambia solo el estado de un pedido (PENDIENTE, EN_REPARTO, ENTREGADO...). */
+    public void actualizarEstado(int idPedido, String nuevoEstado) {
+        String sql = "UPDATE pedido SET estado = ? WHERE id = ?";
+
+        try (Connection conexion = ConexionBD.obtenerConexion();
+             PreparedStatement ps = conexion.prepareStatement(sql)) {
+
+            ps.setString(1, nuevoEstado);
+            ps.setInt(2, idPedido);
+            ps.executeUpdate();
+
+        } catch (Exception e) {
+            throw new DaoException("No se pudo actualizar el estado del pedido #" + idPedido + ": " + e.getMessage(), e);
+        }
     }
+
 }

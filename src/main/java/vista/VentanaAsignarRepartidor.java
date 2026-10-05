@@ -128,6 +128,11 @@ public class VentanaAsignarRepartidor extends JFrame {
         iniciarSimulacionDeEntrega(pedido.id());
     }
 
+    /**La espera de 4 segundos y el UPDATE corren en un hilo aparte. Si corrieran en el hilo de Swing, la ventana se congelaría.
+     Swing solo permite tocar componentes desde su hilo propio. Por eso el cambio de la etiqueta va dentro de SwingUtilities.invokeLater(...).
+     La lambda necesita variables "efectivamente finales", por eso el resultado se copia a textoFinal antes de usarlo.
+     * @param idPedido muestra el id del pedido simulado.
+     */
     private void iniciarSimulacionDeEntrega(int idPedido) {
         Thread hiloEntrega = new Thread(() -> {
             try {

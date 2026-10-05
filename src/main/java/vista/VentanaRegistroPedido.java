@@ -125,9 +125,16 @@ public class VentanaRegistroPedido extends JFrame {
     /**
      * Válida los campos, construye el Pedido concreto según el Tipo elegido
      * y lo agrega a la lista compartida a través del controlador.
+     * 📌 Función principal:
+     * Este método automatiza el flujo de creación de pedidos:
+     * Valida datos → Construye el objeto correcto → Lo guarda en la base de datos → Notifica al usuario → Limpia la interfaz.
+     * 📍 Usos prácticos:
+     * Aplicaciones de delivery: registrar pedidos de comida, encomiendas o compras express.
+     * Sistemas de logística: ingresar solicitudes de transporte con validaciones de distancia, peso y embalaje.
+     *Gestión de clientes: asegurar que cada pedido tenga datos completos y consistentes antes de guardarse.
      */
     private void guardarPedido() {
-        try {
+        try { //Validación de entradas del formulario
             String cliente = txtCliente.getText().trim();
             if (cliente.isBlank()) {
                 throw new IllegalArgumentException("El cliente no puede estar vacío.");
@@ -150,7 +157,7 @@ public class VentanaRegistroPedido extends JFrame {
             // "Asignar repartidor / Iniciar entrega" (Repartidor.setRepartidor()).
             Repartidor sinAsignar = new Repartidor("Por asignar");
 
-            Pedido nuevoPedido = switch (tipo) {
+            Pedido nuevoPedido = switch (tipo) { //Según lo que el usuario elija en el combo cmbTipo, se crea un objeto específico:
                 case "Comida" -> {
                     String restaurante = txtRestaurante.getText().trim();
                     if (restaurante.isBlank()) restaurante = "Restaurante sin especificar";
@@ -158,7 +165,7 @@ public class VentanaRegistroPedido extends JFrame {
                             distancia * 2, true, restaurante, chkMochila.isSelected(), sinAsignar);
                 }
                 case "Encomienda" -> {
-                    double peso = parseDoubleODefecto(txtPeso.getText(), 1.0);
+                    double peso = parseDoubleODefecto(txtPeso.getText(), 0.2);
                     String embalaje = txtEmbalaje.getText().trim();
                     if (embalaje.isBlank()) embalaje = "Bolsa";
                     yield new ServicioEncomiendas(0, cliente, direccion, distancia, "Pedido de encomienda",
