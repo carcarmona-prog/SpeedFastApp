@@ -2,8 +2,8 @@ package conexion;
 
 public class ProbarConexion {
     public static void main(String[] args) throws Exception {
-        try (var c = ConexionBD.obtenerConexion()) {
-            System.out.println("Conectado a: " + c.getCatalog());
+        try (var connection = ConexionBD.obtenerConexion()) {
+            System.out.println("Conectado a: " + connection.getCatalog());
         }
     }
 }

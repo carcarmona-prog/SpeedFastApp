@@ -30,6 +30,8 @@ Diseñamos un programa para la gestión de pedidos de la empresa SpeedFastApp, i
 
 *Actualización semana 8: Completamos el ciclo CRUD (crear, leer, actualizar y eliminar) sobre las tres entidades persistentes del sistema. Se definió la interfaz genérica CrudDAO&lt;T, ID&gt;, con los métodos create(), readAll(), update() y delete(), que ahora implementan PedidoDAO, RepartidorDAO y EntregaDAO; cada uno suma además sus propios métodos de consulta (PedidoDAO.filtrar(estado, tipo), EntregaDAO.listarPorPedido/listarPorRepartidor). Se creó el controlador EntregaControlador para el CRUD manual de entregas. En la interfaz: VentanaListaPedidos ahora permite filtrar los pedidos por tipo y/o estado, y editar o eliminar el seleccionado; VentanaRegistroRepartidor permite seleccionar un repartidor de la tabla para editarlo o eliminarlo; se agregó la ventana VentanaGestionEntregas, que registra, lista, edita y elimina entregas asociando un Pedido y un Repartidor mediante JComboBox (que muestran un texto legible pero conservan el id real), con fecha y hora editables. Se reforzaron las validaciones de entrada y el manejo de errores: por ejemplo, intentar eliminar un pedido o un repartidor con una entrega asociada ahora muestra un mensaje claro en vez de un error de SQL. VentanaAsignarRepartidor, de la semana 5, se mantuvo sin cambios: sigue siendo el flujo de negocio que simula el viaje de entrega con un hilo aparte, distinto del CRUD manual de entregas.
 
+*Correcciones Consistencia JDBC: PedidoControlador.iniciarEntrega() registraba la entrega y actualizaba el estado del pedido con dos conexiones separadas, por lo que un fallo en el segundo paso podía dejar la base de datos inconsistente (una entrega registrada para un pedido que seguía PENDIENTE). Ahora ambas operaciones comparten una sola Connection dentro de una transacción (setAutoCommit(false), commit() si todo sale bien, rollback() si algo falla); EntregaDAO y PedidoDAO ganaron sobrecargas de create()/actualizarEstado() que reciben esa conexión en vez de abrir la suya propia. (2) Credenciales externalizadas: ConexionBD ya no tiene la URL, el usuario y la contraseña escritos directamente en el código; ahora los busca primero en variables de entorno (DB_URL, DB_USER, DB_PASSWORD), después en un archivo src/main/resources/db.properties (listado en .gitignore, nunca se sube al repositorio; se incluye db.properties.example con el formato) y, si no encuentra ninguna de las dos, usa un valor por defecto solo para que el proyecto funcione sin configurar nada en un entorno de evaluación. (3) Hash de contraseñas: la tabla usuarios ya no guarda la contraseña en texto plano. ConexionBD y LoginView calculan el hash SHA-256 (cada una con su propio método privado, para no depender de un paquete nuevo) antes de guardar o comparar la contraseña; la columna password pasó de VARCHAR(50) a VARCHAR(255) para que quepa el hash de 64 caracteres. Además, se agregó un botón "Actualizar pedidos" en VentanaAsignarRepartidor, que antes solo cargaba los pedidos pendientes una vez al abrirse y no se enteraba de pedidos registrados después desde otra ventana.
+
 1- Encapsulamiento de clases.
 
 2- Herencia de clases.
@@ -66,6 +68,12 @@ Diseñamos un programa para la gestión de pedidos de la empresa SpeedFastApp, i
 
 18- Validación de entradas y retroalimentación de errores en la GUI (campos obligatorios, formato de fecha/hora, restricciones de llave foránea).
 
+19- Transacciones JDBC (setAutoCommit, commit, rollback) para mantener la consistencia entre operaciones relacionadas.
+
+20- Externalización de configuración sensible (variables de entorno / archivo de propiedades no versionado) en vez de credenciales escritas en el código.
+
+21- Hash de contraseñas (SHA-256) en vez de texto plano.
+
 Estructura del programa:
 
 📁 raíz del proyecto
@@ -75,7 +83,9 @@ Estructura del programa:
 └── src/main/
     ├── java/                       # Código fuente (detalle más abajo)
     └── resources/
-        └── speedfast_db.sql        # Script DDL que crea la base de datos y sus tablas
+        ├── speedfast_db.sql        # Script DDL que crea la base de datos y sus tablas
+        ├── db.properties.example   # Formato de configuración de conexión (copiar a db.properties y completar)
+        └── db.properties           # Credenciales locales — NO se versiona (está en .gitignore)
 ```
 
 📁 src/main/java/
@@ -85,7 +95,7 @@ Estructura del programa:
 │   └── MainSwing.java              # Punto de entrada de la GUI: LoginView -> VentanaPrincipal
 
 ├── conexion/                     # Conexión con MySQL
-│   ├── ConexionBD.java             # DriverManager + creación de la base de datos y las tablas
+│   ├── ConexionBD.java             # DriverManager + creación de la base de datos y las tablas; lee la configuración (env vars / db.properties / valores por defecto) y hashea la contraseña del admin inicial
 │   └── ProbarConexion.java         # Clase de prueba para verificar la conexión
 
 ├── modelo/                       # Clases de dominio
@@ -112,9 +122,9 @@ Estructura del programa:
 
 ├── dao/                          # Acceso a la base de datos (JDBC)
 │   ├── CrudDAO.java                # Interfaz genérica: create(), readAll(), update(), delete()
-│   ├── PedidoDAO.java               implements CrudDAO<PedidoRegistro, Integer>; además filtrar(estado, tipo), actualizarEstado()
+│   ├── PedidoDAO.java               implements CrudDAO<PedidoRegistro, Integer>; además filtrar(estado, tipo), actualizarEstado() (con sobrecarga transaccional que recibe una Connection)
 │   ├── RepartidorDAO.java           implements CrudDAO<Repartidor, Integer>
-│   ├── EntregaDAO.java              implements CrudDAO<Entrega, Integer>; además listarPorPedido(), listarPorRepartidor()
+│   ├── EntregaDAO.java              implements CrudDAO<Entrega, Integer>; además listarPorPedido(), listarPorRepartidor(), create() con sobrecarga transaccional
 │   └── DaoException.java           # Error de acceso a datos (RuntimeException)
 
 ├── data/                         # Datos en memoria de la semana 6
@@ -126,12 +136,12 @@ Estructura del programa:
 │   └── EntregaControlador.java     # CRUD manual de entregas (lo usa VentanaGestionEntregas)
 
 └── vista/                        # Interfaz gráfica (Swing)
-    ├── LoginView.java              # Inicio de sesión (correo y contraseña de la tabla usuarios)
+    ├── LoginView.java              # Inicio de sesión (correo y contraseña hasheada contra la tabla usuarios)
     ├── VentanaPrincipal.java       # Ventana principal: 5 botones de navegación
     ├── VentanaRegistroPedido.java  # Formulario de registro (Cliente, Dirección, Tipo, ...)
     ├── VentanaRegistroRepartidor.java # Registrar, editar y eliminar repartidores (tabla seleccionable)
     ├── VentanaListaPedidos.java    # Listado de pedidos con filtros por tipo/estado, editar y eliminar
-    ├── VentanaAsignarRepartidor.java # Flujo de negocio: asigna repartidor, registra la entrega y simula el viaje en un hilo aparte
+    ├── VentanaAsignarRepartidor.java # Flujo de negocio: asigna repartidor (transacción JDBC), simula el viaje en un hilo aparte; botón "Actualizar pedidos" para refrescar los combos
     └── VentanaGestionEntregas.java # CRUD manual de entregas: crear, listar, editar y eliminar (combos Pedido/Repartidor)
 ```
 
@@ -155,7 +165,7 @@ Al iniciar, LoginView pide el correo y la contraseña y los valida contra la tab
 
 2. Abre el proyecto en IntelliJ IDEA (el pom.xml descarga automáticamente el conector mysql-connector-j).
 
-3. Ten un servidor MySQL en ejecución en localhost:3306. En conexion/ConexionBD.java revisa que las constantes USER y PASSWORD correspondan a tu usuario de MySQL.
+3. Ten un servidor MySQL en ejecución en localhost:3306. Configura tus credenciales por una de estas dos vías (si no configuras ninguna, ConexionBD usa un valor por defecto para que el proyecto funcione igual): (a) copia src/main/resources/db.properties.example a db.properties (en la misma carpeta) y completa db.url, db.user y db.password con los tuyos — ese archivo no se sube al repositorio; o (b) define las variables de entorno DB_URL, DB_USER y DB_PASSWORD (por ejemplo, en IntelliJ: Run → Edit Configurations → Environment variables), que tienen prioridad sobre el archivo.
 
 4. Crea la base de datos: puedes ejecutar el script src/main/resources/speedfast_db.sql en MySQL Workbench o DBeaver, o dejar que ConexionBD cree la base de datos y las tablas automáticamente la primera vez que se conecta.
 
@@ -166,5 +176,6 @@ Al iniciar, LoginView pide el correo y la contraseña y los valida contra la tab
 7. Para la interfaz gráfica: ejecuta MainSwing.java desde el paquete app e inicia sesión con el usuario administrador (correo: admin@spf.cl, contraseña: admin123). Desde VentanaPrincipal puedes registrar pedidos y repartidores, listarlos con filtros, asignar repartidores (flujo de negocio) y gestionar entregas (CRUD manual).
 
 8. Sigue las instrucciones en pantalla (o en consola, según el punto de entrada elegido).
+
 
 Fecha de entrega: 05-10-2026

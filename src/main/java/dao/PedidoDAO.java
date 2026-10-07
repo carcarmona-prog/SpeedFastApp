@@ -3,11 +3,7 @@ package dao;
 import conexion.ConexionBD;
 import modelo.PedidoRegistro;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLIntegrityConstraintViolationException;
-import java.sql.Statement;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -161,6 +157,25 @@ public class PedidoDAO implements CrudDAO<PedidoRegistro, Integer> {
 
         } catch (Exception e) {
             throw new DaoException("No se pudo actualizar el estado del pedido #" + idPedido + ": " + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Cambia el estado usando una conexión ya abierta por quien llama, para
+     * que este UPDATE pueda compartir una transacción con otra operación
+     * (ver PedidoControlador.iniciarEntrega). Igual que en EntregaDAO, no
+     * maneja la conexión ni envuelve el error: deja que quien maneja la
+     * transacción decida si hace commit o rollback.
+     */
+    public void actualizarEstado(Connection conexion, int idPedido, String nuevoEstado) {
+        String sql = "UPDATE pedido SET estado = ? WHERE id = ?";
+
+        try(PreparedStatement ps = conexion.prepareStatement(sql)){
+            ps.setString(1, nuevoEstado);
+            ps.setInt(2, idPedido);
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
         }
     }
 

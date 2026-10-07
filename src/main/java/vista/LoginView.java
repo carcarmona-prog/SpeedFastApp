@@ -2,11 +2,17 @@ package vista;
 
 import conexion.ConexionBD;
 
+
 import javax.swing.*;
 import java.awt.*;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+
+
 
 /**
  * Ventana de inicio de sesión.
@@ -96,17 +102,53 @@ public class LoginView extends JFrame {
      */
     private boolean credencialesValidas(String correo, String clave) throws Exception {
         String sql = "SELECT 1 FROM usuarios WHERE correo = ? AND password = ?";
+        String claveHasheada =  hashear(clave);
 
         try (Connection conexion = ConexionBD.obtenerConexion();
              PreparedStatement ps = conexion.prepareStatement(sql)) {
 
             ps.setString(1, correo);
-            ps.setString(2, clave);
+            ps.setString(2, claveHasheada);
 
             try (ResultSet rs = ps.executeQuery()) {
                 return rs.next();
             }
         }
     }
+
+    /**
+     * Calcula el hash SHA-256 de un texto y lo devuelve en hexadecimal (64
+     * caracteres). Es el mismo cálculo que hace ConexionBD al crear el
+     * usuario administrador; cada clase tiene su propia copia de este
+     * método (en vez de compartir una clase utilitaria aparte) para no
+     * depender de un paquete nuevo.
+     *
+     * 📌 ¿Para qué sirve?:
+     * Seguridad de contraseñas: en lugar de guardar la contraseña original en la base de datos, se guarda el hash. Así, aunque alguien acceda a la base de datos, no verá las contraseñas en texto plano.
+     * Verificación de integridad: se puede usar para comprobar que un archivo o mensaje no ha sido alterado. Si el hash coincide, el contenido es idéntico.
+     * Identificadores únicos: a veces se usa para generar un identificador único de un texto o documento.
+     * 🧭 Contexto típico de uso:
+     * En aplicaciones como la que describes (gestión de usuarios en una base de datos):
+     * Cuando un usuario se registra, su contraseña se hashea y se guarda el hash.
+     * Cuando inicia sesión, la contraseña ingresada se vuelve a hashear y se compara con el hash guardado.
+     * Si coinciden, significa que la contraseña es correcta, sin necesidad de almacenar la original.
+     * Esto se hace porque los hashes son irreversibles: no puedes obtener la contraseña original a partir del hash, lo que protege la seguridad de los usuarios.
+     */
+    private String hashear(String textoPlano) {
+        try{
+            MessageDigest digest = MessageDigest.getInstance("sha-256");
+            byte[] byteHash = digest.digest(textoPlano.getBytes(StandardCharsets.UTF_8));
+
+            StringBuilder hexadecimal = new StringBuilder(byteHash.length * 2);
+            for (byte b : byteHash) {
+                hexadecimal.append(String.format("%02x", b));
+            }
+            return hexadecimal.toString();
+
+        }catch (NoSuchAlgorithmException e) {
+            throw new IllegalStateException("no se puede hashear la contraseña");
+        }
+    }
+
 }
 

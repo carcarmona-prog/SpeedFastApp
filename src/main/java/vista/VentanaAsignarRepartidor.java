@@ -39,7 +39,7 @@ public class VentanaAsignarRepartidor extends JFrame {
 
     public VentanaAsignarRepartidor() {
         setTitle("Asignar repartidor / Iniciar entrega");
-        setSize(460, 220);
+        setSize(460, 250);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         crearComponentes();
@@ -62,14 +62,21 @@ public class VentanaAsignarRepartidor extends JFrame {
         btnAsignar.addActionListener(e -> asignarYSimularEntrega());
         add(btnAsignar);
 
+        JButton btnActualizar = new JButton("Actualizar pedidos");
+        btnActualizar.addActionListener(e -> cargarDatos());
+        add(btnActualizar);
+
         lblEstado = new JLabel(" ");
         add(lblEstado);
     }
 
     /**
-     * Lee de la base de datos los pedidos pendientes y los repartidores, y
-     * llena los combos. Se arma una etiqueta legible por elemento en vez de
-     * depender de toString().
+     * Lee de nuevo los pedidos pendientes y los repartidores desde la base
+     * de datos, y vuelve a llenar los combos desde cero. Se llama al abrir
+     * la ventana y cada vez que se presiona "Actualizar pedidos" (por
+     * ejemplo, después de registrar un pedido nuevo desde otra ventana,
+     * que esta ventana no ve hasta que se refresca). Se arma una etiqueta
+     * legible por elemento en vez de depender de toString().
      */
     private void cargarDatos() {
         try {
@@ -81,9 +88,12 @@ public class VentanaAsignarRepartidor extends JFrame {
             return;
         }
 
+        cmbPedidos.removeAllItems();
         for (PedidoRegistro p : pedidosPendientes) {
             cmbPedidos.addItem("#" + p.id() + " - " + p.tipo() + " (" + p.direccion() + ")");
         }
+
+        cmbRepartidores.removeAllItems();
         for (Repartidor r : repartidores) {
             cmbRepartidores.addItem("#" + r.getId() + " - " + r.getNombreRepartidor());
         }
@@ -128,11 +138,6 @@ public class VentanaAsignarRepartidor extends JFrame {
         iniciarSimulacionDeEntrega(pedido.id());
     }
 
-    /**La espera de 4 segundos y el UPDATE corren en un hilo aparte. Si corrieran en el hilo de Swing, la ventana se congelaría.
-     Swing solo permite tocar componentes desde su hilo propio. Por eso el cambio de la etiqueta va dentro de SwingUtilities.invokeLater(...).
-     La lambda necesita variables "efectivamente finales", por eso el resultado se copia a textoFinal antes de usarlo.
-     * @param idPedido muestra el id del pedido simulado.
-     */
     private void iniciarSimulacionDeEntrega(int idPedido) {
         Thread hiloEntrega = new Thread(() -> {
             try {
@@ -160,4 +165,3 @@ public class VentanaAsignarRepartidor extends JFrame {
         hiloEntrega.start();
     }
 }
-

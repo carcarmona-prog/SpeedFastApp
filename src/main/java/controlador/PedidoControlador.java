@@ -1,5 +1,7 @@
 package controlador;
 
+import conexion.ConexionBD;
+import dao.DaoException;
 import dao.EntregaDAO;
 import dao.PedidoDAO;
 import modelo.Entrega;
@@ -10,6 +12,8 @@ import modelo.ServicioComida;
 import modelo.ServicioComprasExpress;
 import modelo.ServicioEncomiendas;
 
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.List;
 
 /**
@@ -72,11 +76,33 @@ public class PedidoControlador {
     }
 
     /**
-     * Registra la entrega (pedido + repartidor) y deja el pedido EN_REPARTO.
+     * Registra la entrega (pedido + repartidor) y deja el pedido EN_REPARTO,
+     * las dos cosas dentro de una misma transacción: si el INSERT de la
+     * entrega funciona pero el UPDATE del pedido falla (o viceversa), se
+     * hace rollback de ambas en vez de dejar la base de datos a medio
+     * camino (una entrega registrada para un pedido que sigue PENDIENTE).
      */
     public void iniciarEntrega(int idPedido, int idRepartidor) {
-        entregaDAO.create(new Entrega(idPedido, idRepartidor));
-        pedidoDAO.actualizarEstado(idPedido, EstadoPedido.EN_REPARTO.name());
+
+        try(Connection conexion = ConexionBD.obtenerConexion()){
+            conexion.setAutoCommit(false);
+
+            try{
+                entregaDAO.create(new Entrega(idPedido, idRepartidor));
+                pedidoDAO.actualizarEstado(idPedido, EstadoPedido.EN_REPARTO.name());
+                conexion.commit();
+
+            }catch (SQLException e){
+                conexion.rollback();
+                throw new DaoException("No se pudo iniciar la entrega del pedido #" + idPedido + ": " + e.getMessage(), e);
+            }finally{
+                conexion.setAutoCommit(true);
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        } catch (Exception e) {
+            throw new DaoException("No se pudo conectar con la base de datos: " + e.getMessage(), e);
+        }
     }
 
     /** Marca el pedido como ENTREGADO en la base de datos. */

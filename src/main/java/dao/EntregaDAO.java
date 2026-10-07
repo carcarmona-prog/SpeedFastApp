@@ -3,12 +3,7 @@ package dao;
 import conexion.ConexionBD;
 import modelo.Entrega;
 
-import java.sql.Connection;
-import java.sql.Date;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.Statement;
-import java.sql.Time;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,6 +12,35 @@ import java.util.List;
  * que relaciona un pedido con un repartidor. CRUD completo.
  */
 public class EntregaDAO implements CrudDAO<Entrega, Integer> {
+
+    /**
+     * Inserta la entrega usando una conexión que ya fue abierta por quien
+     * llama (por ejemplo, PedidoControlador.iniciarEntrega, que necesita
+     * que este INSERT y el UPDATE del pedido compartan una transacción).
+     * No cierra la conexión ni hace commit/rollback: eso es responsabilidad
+     * de quien la abrió. Por eso declara "throws SQLException" en vez de
+     * envolver el error en DaoException: quien maneja la transacción
+     * necesita capturar el error exacto para decidir si hace rollback.
+     */
+    public int create(Connection conexion, Entrega entrega)throws SQLException {
+        String sql ="INSERT INTO entrega (id_pedido, id_repartidor, fecha, hora) VALUES (?,?,?,?)";
+
+        try(PreparedStatement ps = conexion.prepareStatement(sql,Statement.RETURN_GENERATED_KEYS)){
+            ps.setInt(1, entrega.getIdPedido());
+            ps.setInt(2, entrega.getIdRepartidor());
+            ps.setDate(3, Date.valueOf(entrega.getFecha()));
+            ps.setTime(4, Time.valueOf(entrega.getHora()));
+            ps.executeUpdate();
+
+            try(ResultSet claves = ps.getGeneratedKeys()){
+                int id = claves.next() ? claves.getInt(1) : 0;
+                entrega.setId(id);
+                return id;
+            }
+
+        }
+
+    }
 
     /** Inserta la entrega y devuelve el id generado por la base de datos. */
     @Override
